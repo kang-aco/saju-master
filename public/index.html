@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>사주팔자 — 자평진전 AI 분석</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="logo">☯</div>
+    <h1>사주팔자 AI 분석</h1>
+    <p class="subtitle">자평진전(子平眞詮) 기반 · Claude AI 해석</p>
+  </header>
+
+  <main>
+    <!-- Input Form -->
+    <section class="card form-card" id="formSection">
+      <h2>생년월일 & 사주 입력</h2>
+
+      <form id="sajuForm">
+        <div class="form-grid">
+          <!-- 생년월일 -->
+          <div class="field-group">
+            <label>생년월일</label>
+            <div class="inline-inputs">
+              <div class="input-wrap">
+                <input type="number" id="birth_year" placeholder="연도" min="1900" max="2100" required />
+                <span class="unit">년</span>
+              </div>
+              <div class="input-wrap">
+                <input type="number" id="birth_month" placeholder="월" min="1" max="12" required />
+                <span class="unit">월</span>
+              </div>
+              <div class="input-wrap">
+                <input type="number" id="birth_day" placeholder="일" min="1" max="31" required />
+                <span class="unit">일</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 성별 -->
+          <div class="field-group">
+            <label>성별</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="gender" value="남" checked /> 남자
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="gender" value="여" /> 여자
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 사주 사柱 -->
+        <div class="pillars-section">
+          <p class="pillars-hint">각 주(柱)는 천간+지지 2글자 한자로 입력하세요. 예) 甲子, 乙丑</p>
+          <div class="pillars-grid">
+            <div class="pillar-input">
+              <label>연주 (年柱)</label>
+              <input type="text" id="yunju" maxlength="2" placeholder="甲子" required />
+              <span class="pillar-desc">태어난 해</span>
+            </div>
+            <div class="pillar-input">
+              <label>월주 (月柱)</label>
+              <input type="text" id="wolju" maxlength="2" placeholder="乙丑" required />
+              <span class="pillar-desc">태어난 달</span>
+            </div>
+            <div class="pillar-input">
+              <label>일주 (日柱)</label>
+              <input type="text" id="ilju" maxlength="2" placeholder="丙寅" required />
+              <span class="pillar-desc">태어난 날 (일간)</span>
+            </div>
+            <div class="pillar-input">
+              <label>시주 (時柱)</label>
+              <input type="text" id="siju" maxlength="2" placeholder="丁卯" required />
+              <span class="pillar-desc">태어난 시각</span>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn-analyze">
+          <span class="btn-icon">✦</span> 사주 분석 시작
+        </button>
+      </form>
+    </section>
+
+    <!-- Loading -->
+    <div id="loadingSection" class="hidden">
+      <div class="loader-wrap">
+        <div class="loader-symbol">☯</div>
+        <p class="loader-text">AI가 사주를 분석하고 있습니다…</p>
+        <p class="loader-sub">자평진전 격국·용신 계산 중</p>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div id="errorSection" class="hidden card error-card">
+      <h3>⚠ 오류</h3>
+      <p id="errorMsg"></p>
+      <button onclick="resetForm()" class="btn-reset">다시 입력</button>
+    </div>
+
+    <!-- Results -->
+    <div id="resultSection" class="hidden">
+
+      <!-- Saju Chart -->
+      <section class="card chart-card">
+        <h2>사주 원국 (四柱原局)</h2>
+        <div class="saju-table-wrap">
+          <table class="saju-table" id="sajuTable">
+            <thead>
+              <tr>
+                <th>시주(時)</th><th>일주(日)</th><th>월주(月)</th><th>연주(年)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="sipsung-row" class="sipsung-row"></tr>
+              <tr id="ganjji-row" class="ganjji-row"></tr>
+              <tr id="sipsung-ji-row" class="sipsung-row"></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Core Analysis Row -->
+      <div class="two-col">
+
+        <!-- 격국·용신 -->
+        <section class="card">
+          <h2>격국 · 용신</h2>
+          <div id="gyukResult"></div>
+        </section>
+
+        <!-- 일간강약 + 오행 -->
+        <section class="card">
+          <h2>일간강약 · 오행</h2>
+          <div id="ilganResult"></div>
+        </section>
+
+      </div>
+
+      <!-- 대운 흐름 -->
+      <section class="card">
+        <h2>대운 흐름 (大運)</h2>
+        <div id="daewunResult" class="daewun-scroll"></div>
+      </section>
+
+      <!-- 지지 관계 -->
+      <section class="card" id="jijiSection">
+        <h2>지지 관계 · 신살</h2>
+        <div id="jijiResult"></div>
+      </section>
+
+      <!-- AI 해석 -->
+      <section class="card ai-card">
+        <h2><span class="ai-badge">AI</span> Claude 종합 해석</h2>
+        <div id="aiResult" class="ai-content"></div>
+      </section>
+
+      <div class="action-row">
+        <button onclick="resetForm()" class="btn-reset">↩ 새로 분석</button>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <p>자평진전(子平眞詮) 기반 사주 분석 · Claude AI 해석 · Cloudflare Pages</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,417 @@
+/* ─── Reset & Base ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0d0f14;
+  --surface:   #141720;
+  --surface2:  #1c2030;
+  --border:    #2a2f45;
+  --gold:      #c9a84c;
+  --gold-lite: #e8c97a;
+  --red:       #e05c5c;
+  --blue:      #5b8dee;
+  --green:     #4caf7d;
+  --text:      #dce3f0;
+  --muted:     #7a8499;
+  --radius:    12px;
+  --shadow:    0 4px 24px rgba(0,0,0,.45);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Noto Serif KR', 'Noto Serif', Georgia, serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Header ─── */
+header {
+  text-align: center;
+  padding: 3rem 1rem 2rem;
+  background: linear-gradient(180deg, #0a0c10 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--gold);
+  animation: spin 12s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+header h1 {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  color: var(--gold-lite);
+  letter-spacing: .08em;
+  margin: .5rem 0 .25rem;
+}
+.subtitle {
+  color: var(--muted);
+  font-size: .9rem;
+  letter-spacing: .04em;
+}
+
+/* ─── Main Layout ─── */
+main {
+  flex: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 2rem 1rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ─── Cards ─── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.card h2 {
+  font-size: 1.05rem;
+  color: var(--gold);
+  letter-spacing: .06em;
+  margin-bottom: 1.2rem;
+  padding-bottom: .5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ─── Form ─── */
+.form-card h2 { font-size: 1.1rem; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } }
+
+.field-group label {
+  display: block;
+  font-size: .8rem;
+  color: var(--muted);
+  letter-spacing: .05em;
+  margin-bottom: .4rem;
+}
+
+.inline-inputs {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+}
+.input-wrap {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+}
+.unit { font-size: .85rem; color: var(--muted); }
+
+input[type="number"],
+input[type="text"] {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: .95rem;
+  padding: .5rem .7rem;
+  outline: none;
+  transition: border-color .2s;
+}
+input[type="number"] { width: 5.5rem; }
+input[type="text"]   { width: 5rem; text-align: center; letter-spacing: .1em; font-size: 1rem; }
+input:focus { border-color: var(--gold); }
+
+.radio-group {
+  display: flex;
+  gap: 1.2rem;
+  margin-top: .2rem;
+}
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  cursor: pointer;
+  font-size: .95rem;
+}
+input[type="radio"] { accent-color: var(--gold); width: 16px; height: 16px; }
+
+/* Pillars */
+.pillars-section { margin-bottom: 1.5rem; }
+.pillars-hint {
+  font-size: .78rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+@media (max-width: 600px) { .pillars-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.pillar-input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+}
+.pillar-input label {
+  font-size: .78rem;
+  color: var(--gold);
+  letter-spacing: .04em;
+}
+.pillar-input input {
+  width: 4.5rem;
+  text-align: center;
+  font-size: 1.2rem;
+  letter-spacing: .15em;
+  padding: .6rem .4rem;
+}
+.pillar-desc {
+  font-size: .7rem;
+  color: var(--muted);
+}
+
+/* Submit Button */
+.btn-analyze {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  width: 100%;
+  padding: .9rem;
+  background: linear-gradient(135deg, #a07830, var(--gold));
+  border: none;
+  border-radius: 10px;
+  color: #0d0f14;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  cursor: pointer;
+  transition: opacity .2s, transform .1s;
+}
+.btn-analyze:hover { opacity: .88; }
+.btn-analyze:active { transform: scale(.98); }
+.btn-analyze:disabled { opacity: .5; cursor: not-allowed; }
+.btn-icon { font-size: 1.1rem; }
+
+/* ─── Loader ─── */
+.loader-wrap {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+.loader-symbol {
+  font-size: 3.5rem;
+  color: var(--gold);
+  animation: spin 2s linear infinite;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+.loader-text {
+  font-size: 1.1rem;
+  color: var(--gold-lite);
+  margin-bottom: .4rem;
+}
+.loader-sub { color: var(--muted); font-size: .85rem; }
+
+/* ─── Error ─── */
+.error-card {
+  border-color: var(--red);
+  background: rgba(224,92,92,.08);
+}
+.error-card h3 { color: var(--red); margin-bottom: .6rem; }
+
+/* ─── Saju Table ─── */
+.saju-table-wrap { overflow-x: auto; }
+.saju-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+.saju-table th {
+  background: var(--surface2);
+  color: var(--gold);
+  font-size: .8rem;
+  letter-spacing: .06em;
+  padding: .5rem .8rem;
+  border: 1px solid var(--border);
+}
+.saju-table td {
+  border: 1px solid var(--border);
+  padding: .55rem .8rem;
+  font-size: 1rem;
+}
+.sipsung-row td { color: var(--muted); font-size: .82rem; }
+.ganjji-row td  { font-size: 1.5rem; color: var(--gold-lite); letter-spacing: .1em; font-weight: 700; }
+.ilju-col        { background: rgba(201,168,76,.08); }
+
+/* ─── Two Col ─── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+@media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ─── Gyuk / Ilgan Result ─── */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: .35rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: .88rem;
+  gap: .5rem;
+}
+.info-row:last-child { border-bottom: none; }
+.info-label { color: var(--muted); flex-shrink: 0; }
+.info-val   { color: var(--text); text-align: right; }
+.info-val.gold  { color: var(--gold-lite); font-weight: 600; }
+.info-val.green { color: var(--green); }
+.info-val.red   { color: var(--red); }
+
+/* Oheng bar */
+.oheng-bars { margin-top: .8rem; }
+.oheng-bar-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .4rem;
+  font-size: .82rem;
+}
+.oheng-name { width: 1.5rem; color: var(--muted); }
+.oheng-track {
+  flex: 1;
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.oheng-fill { height: 100%; border-radius: 3px; transition: width .6s ease; }
+.oheng-pct { width: 2.8rem; text-align: right; color: var(--muted); }
+
+/* ─── Daewun ─── */
+.daewun-scroll { overflow-x: auto; }
+.daewun-list {
+  display: flex;
+  gap: .8rem;
+  padding-bottom: .5rem;
+  min-width: max-content;
+}
+.daewun-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .7rem .9rem;
+  text-align: center;
+  min-width: 90px;
+  transition: transform .15s;
+  cursor: default;
+}
+.daewun-item:hover { transform: translateY(-3px); }
+.daewun-item.current { border-color: var(--gold); background: rgba(201,168,76,.1); }
+.dw-age    { font-size: .72rem; color: var(--muted); margin-bottom: .3rem; }
+.dw-ganjji { font-size: 1.3rem; color: var(--gold-lite); letter-spacing: .1em; font-weight: 700; margin-bottom: .3rem; }
+.dw-score  { font-size: .75rem; }
+.score-pos { color: var(--green); }
+.score-neg { color: var(--red); }
+.score-neu { color: var(--muted); }
+.dw-label  { font-size: .68rem; color: var(--muted); margin-top: .2rem; line-height: 1.3; }
+
+/* ─── Jiji Relations ─── */
+.rel-list, .sinsul-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-top: .5rem;
+}
+.rel-tag {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: .25rem .6rem;
+  font-size: .8rem;
+  color: var(--muted);
+}
+.rel-tag.hap { border-color: var(--green); color: var(--green); }
+.rel-tag.chung { border-color: var(--red); color: var(--red); }
+.rel-tag.hyung { border-color: #e0925c; color: #e0925c; }
+.sinsul-tag {
+  background: rgba(91,141,238,.12);
+  border: 1px solid var(--blue);
+  border-radius: 6px;
+  padding: .25rem .6rem;
+  font-size: .8rem;
+  color: var(--blue);
+}
+
+/* ─── AI Card ─── */
+.ai-card { border-color: #2a3a5a; }
+.ai-badge {
+  background: var(--blue);
+  color: #fff;
+  font-size: .7rem;
+  padding: .1rem .4rem;
+  border-radius: 4px;
+  letter-spacing: .04em;
+  margin-right: .4rem;
+  vertical-align: middle;
+}
+.ai-content {
+  line-height: 1.8;
+  font-size: .92rem;
+  white-space: pre-wrap;
+  color: var(--text);
+}
+.ai-content h3 {
+  color: var(--gold);
+  font-size: 1rem;
+  margin: 1.2rem 0 .4rem;
+}
+
+/* ─── Action Row ─── */
+.action-row { text-align: center; }
+.btn-reset {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: .9rem;
+  padding: .55rem 1.4rem;
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+}
+.btn-reset:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ─── Footer ─── */
+footer {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: .78rem;
+  letter-spacing: .03em;
+}
+
+/* ─── Utilities ─── */
+.hidden { display: none !important; }
+.section-label {
+  font-size: .75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin: .8rem 0 .3rem;
+}
