@@ -138,7 +138,7 @@ async function callClaudeAPI(apiKey, prompt) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 3000,
+      max_tokens: 6000,
       messages: [{ role: 'user', content: prompt }]
     })
   });
@@ -147,7 +147,12 @@ async function callClaudeAPI(apiKey, prompt) {
     throw new Error(`Claude API 오류: ${response.status} ${errText}`);
   }
   const data = await response.json();
-  return data.content?.[0]?.text ?? '';
+  const text  = data.content?.[0]?.text ?? '';
+  // 토큰 한도로 잘렸을 경우 안내 문구 추가
+  if (data.stop_reason === 'max_tokens') {
+    return text + '\n\n*(응답이 길이 제한으로 일부 잘렸습니다.)*';
+  }
+  return text;
 }
 
 export async function onRequest(context) {
