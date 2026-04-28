@@ -3,7 +3,7 @@
 import {
   SIBI_UNSUNG, SIBI_UNSUNG_STRENGTH, CHUNGGAN_OHENG, JIJI_OHENG,
   JANGGAN, GANJJI_60, GANJJI_INDEX, getGongmang,
-  YUKMA, DOHWA, HWAGAE, CHEONUL_GUIIN, MUNCHANG_GUIIN, YANGIN, GEUBSAL
+  YUKMA, DOHWA, HWAGAE, CHEONUL_GUIIN, MUNCHANG_GUIIN, YANGIN, GEUBSAL, GWIMUN
 } from './tables.js';
 
 const UNSUNG_MEANING = {
@@ -132,9 +132,37 @@ function getGeubsal(baseJiji, checkJijis) {
   }));
 }
 
+// ── 귀문관살(鬼門關殺) ──────────────────────────────────────────────────────
+// 원국 지지 4개 중 귀문 쌍이 있으면 감지
+// 子酉·丑午·寅未·卯申·辰亥·巳戌
+function getGwimunSal(jijiList) {
+  const result = [];
+  const PILLAR = ['연지','월지','일지','시지'];
+  for (let i = 0; i < jijiList.length; i++) {
+    for (let j = i + 1; j < jijiList.length; j++) {
+      const j1 = jijiList[i], j2 = jijiList[j];
+      if (!j1 || !j2) continue;
+      if (GWIMUN[j1] === j2) {
+        const iljiInvolved = (i === 2 || j === 2);
+        result.push({
+          살: '귀문관살(鬼門關殺)',
+          지지1: j1, 지지2: j2,
+          위치: `${PILLAR[i]}·${PILLAR[j]}`,
+          일지관여: iljiInvolved,
+          의미: '정신적 예민함과 탁월한 직감·영감을 나타냅니다. 예지몽, 육감, 신기(神氣)가 강하며 심리·철학·종교·예술 분야에서 두각을 나타낼 수 있습니다. 반면 신경과민, 스트레스, 정신적 불안정에 주의가 필요합니다.',
+          특성: iljiInvolved
+            ? '일지가 포함되어 내면 깊숙이 작용합니다. 배우자나 가까운 관계에서도 감성적 예민함이 강하게 드러납니다.'
+            : '원국 내 귀문관살로, 타고난 직감과 감수성이 삶 전반에 영향을 줍니다.',
+        });
+      }
+    }
+  }
+  return result;
+}
+
 export function getAllSinsul(ilgan, yunji, wolji, ilji, siji, extraJijis = []) {
   const allJijis = [yunji, wolji, ilji, siji, ...extraJijis].filter(Boolean);
-  const result = { 역마살:[], 도화살:[], 화개살:[], 천을귀인:[], 문창귀인:[], 양인살:[], 겁살:[] };
+  const result = { 역마살:[], 도화살:[], 화개살:[], 천을귀인:[], 문창귀인:[], 양인살:[], 겁살:[], 귀문관살:[] };
   for (const base of [yunji, ilji]) {
     if (!base) continue;
     result.역마살.push(...getYukma(base, allJijis));
@@ -145,6 +173,7 @@ export function getAllSinsul(ilgan, yunji, wolji, ilji, siji, extraJijis = []) {
   result.천을귀인 = getCheonulGuiin(ilgan, allJijis);
   result.문창귀인 = getMunchang(ilgan, allJijis);
   result.양인살 = getYanginSal(ilgan, allJijis);
+  result.귀문관살 = getGwimunSal(allJijis.slice(0,4)); // 원국 4지지만
   // 중복 제거
   for (const key of Object.keys(result)) {
     const seen = new Set();

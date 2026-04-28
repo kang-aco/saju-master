@@ -1,7 +1,7 @@
 // functions/api/analyze.js
 // Cloudflare Pages Function — 사주 분석 API + Claude AI 해석
 
-import { CHUNGGAN, JIJI, JANGGAN, CHUNGGAN_OHENG, JIJI_OHENG, SIBI_UNSUNG } from '../_lib/tables.js';
+import { CHUNGGAN, JIJI, JANGGAN, CHUNGGAN_OHENG, JIJI_OHENG, SIBI_UNSUNG, WONJIN, GWIMUN } from '../_lib/tables.js';
 import { chungganSipsung, jijiSamhap, jijiBanghap, analyzeJijiRelation, analyzeAmhap } from '../_lib/relations.js';
 import { calculateIlganStrength, analyzeOhengPower, checkGongmangInSaju, getAllSinsul } from '../_lib/sinsul.js';
 import { fullGyukAnalysis } from '../_lib/gyukguk.js';
@@ -223,8 +223,13 @@ export async function onRequest(context) {
     for (let i = 0; i < jijiList.length; i++) {
       for (let j = i + 1; j < jijiList.length; j++) {
         const rel = analyzeJijiRelation(jijiList[i], jijiList[j]);
-        if (rel['합'] || rel['충'] || rel['형'] || rel['파'] || rel['해']) {
-          jijiRelations.push({ ji1: jijiList[i], ji2: jijiList[j], 관계: rel['총평'] ?? '' });
+        if (rel['합'] || rel['충'] || rel['형'] || rel['파'] || rel['해'] || rel['원진']) {
+          const tags = [];
+          if (rel['합'])   tags.push(rel['합']['합']);
+          if (rel['충'])   tags.push(rel['충']['충']);
+          if (rel['형'])   tags.push(rel['형']['형']);
+          if (rel['원진']) tags.push(rel['원진']['원진']);
+          jijiRelations.push({ ji1: jijiList[i], ji2: jijiList[j], 관계: tags.join(' · ') || rel['총평'] ?? '' });
         }
       }
     }
@@ -261,11 +266,30 @@ export async function onRequest(context) {
       }))
       .filter(dw => dw.이벤트.length > 0);
 
-    // 세운 목록에 복음·반음 첨부
-    const segunListEnriched = segunList.map(item => ({
-      ...item,
-      복음반음: checkBokyumBanyum(item.간지, chungganList, jijiList),
-    }));
+    // 일지 원진·귀문 상대 지지 계산
+    const ilji = jijiList[2] ?? '';
+    const iljiWonjin = WONJIN[ilji] ?? null;
+    const iljiGwimun = GWIMUN[ilji] ?? null;
+    const PILLAR_NAMES = ['연지','월지','일지','시지'];
+
+    // 세운 목록에 복음·반음 + 원진 경보 첨부
+    const segunListEnriched = segunList.map(item => {
+      const sgJi = item.간지[1] ?? '';
+      // 이 세운 지지가 원국 어느 지지와 원진인지
+      const wonjinAlerts = jijiList
+        .map((wj, idx) => wj && WONJIN[sgJi] === wj ? { 원국지지: wj, 위치: PILLAR_NAMES[idx] } : null)
+        .filter(Boolean);
+      // 이 세운 지지가 원국 어느 지지와 귀문인지
+      const gwimunAlerts = jijiList
+        .map((wj, idx) => wj && GWIMUN[sgJi] === wj ? { 원국지지: wj, 위치: PILLAR_NAMES[idx] } : null)
+        .filter(Boolean);
+      return {
+        ...item,
+        복음반음:     checkBokyumBanyum(item.간지, chungganList, jijiList),
+        원진경보:     wonjinAlerts,
+        귀문경보:     gwimunAlerts,
+      };
+    });
 
     const wolunList = analyzeWolunOfYear(
       currentYear,
@@ -297,6 +321,8 @@ export async function onRequest(context) {
       jiji_relations: jijiRelations,
       amhap,
       samhap, banghap,
+      ilji_wonjin: iljiWonjin,
+      ilji_gwimun: iljiGwimun,
       gongmang,
       sinsul,
       gyuk_analysis: gyukResult,

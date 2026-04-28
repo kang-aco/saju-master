@@ -512,22 +512,32 @@ function renderSegunWolunIlun(data) {
   document.getElementById('segunResult').innerHTML = segunList.map(item => {
     const isCur     = item.연도 === cd.year;
     const cls       = scoreClass(item.점수);
-    const byEvents  = item.복음반음 ?? [];
+    const byEvents      = item.복음반음 ?? [];
+    const wonjinAlerts  = item.원진경보 ?? [];
+    const gwimunAlerts  = item.귀문경보 ?? [];
     const hasBokym  = byEvents.some(e => e.유형 === '복음');
     const hasBanyum = byEvents.some(e => e.유형 === '반음');
-    const byBadges  = [
+    const hasWonjin = wonjinAlerts.length > 0;
+    const hasGwimun = gwimunAlerts.length > 0;
+    const extraCls  = [
+      byEvents.length ? 'run-has-by' : '',
+      hasWonjin ? 'run-has-wonjin' : '',
+    ].filter(Boolean).join(' ');
+    const badges = [
       hasBokym  ? '<span class="run-by-badge run-bokyum">복음</span>' : '',
       hasBanyum ? '<span class="run-by-badge run-banyum">반음</span>' : '',
+      hasWonjin ? `<span class="run-by-badge run-wonjin" title="${wonjinAlerts.map(a=>`${a.위치} ${a.원국지지} 원진`).join(', ')}">⚔ 원진</span>` : '',
+      hasGwimun ? `<span class="run-by-badge run-gwimun" title="${gwimunAlerts.map(a=>`${a.위치} ${a.원국지지} 귀문`).join(', ')}">👁 귀문</span>` : '',
     ].filter(Boolean).join('');
     const events = item.특별사건?.length
       ? `<span class="run-events">${item.특별사건.join(' · ')}</span>` : '';
-    return `<div class="run-row${isCur ? ' run-current' : ''}${byEvents.length ? ' run-has-by' : ''}">
+    return `<div class="run-row${isCur ? ' run-current' : ''} ${extraCls}">
       <span class="run-year">${item.연도}년${isCur ? ' ★' : ''}</span>
       <span class="run-ganjji">${item.간지}</span>
       <span class="run-sipsung">${item.천간십성}/${item.지지십성}</span>
       <span class="run-score ${cls}">${item.점수 >= 0 ? '+' : ''}${item.점수}</span>
       <span class="run-giljung ${cls}">${scoreLabel(item.점수)}</span>
-      ${byBadges}
+      ${badges}
       ${events}
     </div>`;
   }).join('');
@@ -563,22 +573,45 @@ function renderSegunWolunIlun(data) {
 }
 
 function renderJijiSinsul(data) {
-  const rels     = data.jiji_relations ?? [];
-  const amhap    = data.amhap ?? [];
-  const sinsul   = data.sinsul ?? {};
-  const samhap   = data.samhap ?? [];
-  const banghap  = data.banghap ?? [];
-  const gongmang = data.gongmang ?? {};
+  const rels        = data.jiji_relations ?? [];
+  const amhap       = data.amhap ?? [];
+  const sinsul      = data.sinsul ?? {};
+  const samhap      = data.samhap ?? [];
+  const banghap     = data.banghap ?? [];
+  const gongmang    = data.gongmang ?? {};
+  const iljiWonjin  = data.ilji_wonjin ?? null;
+  const iljiGwimun  = data.ilji_gwimun ?? null;
   let html = '';
 
+  // ── 지지 관계 (원진 강조) ─────────────────────────────────────────────
   if (rels.length) {
     const tags = rels.map(r => {
       const txt = r.관계??'';
-      const cls = txt.includes('합')?'hap':txt.includes('충')?'chung':txt.includes('형')?'hyung':'';
-      return `<span class="rel-tag ${cls}">${r.ji1}·${r.ji2} ${txt}</span>`;
+      let cls = txt.includes('합')?'hap':txt.includes('충')?'chung':txt.includes('형')?'hyung':'';
+      if (txt.includes('원진')) cls += ' wonjin';
+      return `<span class="rel-tag ${cls.trim()}">${r.ji1}·${r.ji2} ${txt}</span>`;
     }).join('');
     html += `<div class="section-label">지지 관계</div><div class="rel-list">${tags}</div>`;
   }
+
+  // ── 일지 원진·귀문 상대 안내 ──────────────────────────────────────────
+  if (iljiWonjin || iljiGwimun) {
+    html += `<div class="ilji-rel-info">`;
+    if (iljiWonjin) {
+      html += `<div class="ilji-rel-item ilji-wonjin">
+        <span class="ilji-rel-badge wj-badge">원진(怨嗔)</span>
+        <span class="ilji-rel-text">일지의 원진 상대: <strong>${iljiWonjin}</strong> — 일지가 ${iljiWonjin}인 사람과 이유 없는 갈등·불편함이 생기기 쉽습니다. 배우자궁 관련이므로 이성 관계에서도 주의가 필요합니다.</span>
+      </div>`;
+    }
+    if (iljiGwimun) {
+      html += `<div class="ilji-rel-item ilji-gwimun">
+        <span class="ilji-rel-badge gm-badge">귀문(鬼門)</span>
+        <span class="ilji-rel-text">일지의 귀문 상대: <strong>${iljiGwimun}</strong> — 일지가 ${iljiGwimun}인 사람과 신비롭고 강렬한 끌림이 있지만, 정신적 자극이 과도해질 수 있습니다.</span>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
   if (samhap.length) {
     html += `<div class="section-label" style="margin-top:.7rem">삼합</div><div class="rel-list">` +
       samhap.map(s=>`<span class="rel-tag hap">${s.종류} (${s.오행})</span>`).join('') + '</div>';
@@ -613,11 +646,30 @@ function renderJijiSinsul(data) {
     html += `<div class="section-label" style="margin-top:.7rem">공망</div>
       <div style="font-size:.85rem;color:var(--muted)">${gongmang.설명}</div>`;
   }
-  const active = Object.entries(sinsul).filter(([,v])=>v.length>0);
-  if (active.length) {
-    html += `<div class="section-label" style="margin-top:.7rem">신살</div><div class="sinsul-list">` +
-      active.flatMap(([,arr])=>arr.map(s=>`<span class="sinsul-tag">${s.살??s.귀인??'신살'}</span>`)).join('') + '</div>';
+
+  // ── 신살 (귀문관살 강조 포함) ──────────────────────────────────────────
+  const gwimunList = sinsul.귀문관살 ?? [];
+  const otherSinsul = Object.entries(sinsul).filter(([k,v]) => k !== '귀문관살' && v.length > 0);
+
+  if (gwimunList.length) {
+    for (const gm of gwimunList) {
+      html += `<div class="gwimun-card">
+        <div class="gwimun-header">
+          <span class="gwimun-badge">👁 귀문관살 (鬼門關殺)</span>
+          <span class="gwimun-pos">${gm.지지1}·${gm.지지2} (${gm.위치})</span>
+          ${gm.일지관여 ? '<span class="gwimun-ilji">★ 일지 관여</span>' : ''}
+        </div>
+        <div class="gwimun-desc">${gm.의미}</div>
+        ${gm.일지관여 ? `<div class="gwimun-extra">${gm.특성}</div>` : ''}
+      </div>`;
+    }
   }
+
+  if (otherSinsul.length) {
+    html += `<div class="section-label" style="margin-top:.7rem">신살</div><div class="sinsul-list">` +
+      otherSinsul.flatMap(([,arr])=>arr.map(s=>`<span class="sinsul-tag">${s.살??s.귀인??'신살'}</span>`)).join('') + '</div>';
+  }
+
   if (!html) html = '<p style="color:var(--muted);font-size:.85rem">특이 사항 없음</p>';
   document.getElementById('jijiResult').innerHTML = html;
 }

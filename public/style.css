@@ -573,6 +573,102 @@ input[type="radio"] { accent-color: var(--gold); width: 16px; height: 16px; }
   margin: 1.2rem 0 .4rem;
 }
 
+/* ─── 원진(怨嗔) 강조 태그 ─── */
+.rel-tag.wonjin {
+  border-color: #c05050;
+  color: #f08080;
+  background: rgba(192,80,80,.1);
+}
+
+/* ─── 일지 원진·귀문 상대 안내 ─── */
+.ilji-rel-info {
+  margin-top: .6rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.ilji-rel-item {
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  padding: .55rem .8rem;
+  border-radius: 8px;
+  font-size: .82rem;
+  line-height: 1.6;
+}
+.ilji-wonjin { background: rgba(192,80,80,.08); border: 1px solid #8a3030; }
+.ilji-gwimun { background: rgba(120,80,180,.08); border: 1px solid #5a3080; }
+.ilji-rel-badge {
+  flex-shrink: 0;
+  font-size: .68rem;
+  padding: .15rem .42rem;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  margin-top: .1rem;
+}
+.wj-badge { background: #7a2020; color: #ffb0b0; }
+.gm-badge { background: #3a1a70; color: #c8a0ff; }
+.ilji-rel-text { color: var(--muted); }
+.ilji-rel-text strong { color: var(--text); }
+
+/* ─── 귀문관살(鬼門關殺) 카드 ─── */
+.gwimun-card {
+  margin-top: .8rem;
+  border: 1px solid #4a2a7a;
+  border-left: 4px solid #8a50d0;
+  border-radius: 10px;
+  background: rgba(138,80,208,.07);
+  padding: .8rem 1rem;
+  transition: transform .15s;
+}
+.gwimun-card:hover { transform: translateX(3px); }
+.gwimun-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .45rem;
+  margin-bottom: .4rem;
+}
+.gwimun-badge {
+  font-size: .72rem;
+  padding: .12rem .45rem;
+  border-radius: 4px;
+  background: #5a2a9a;
+  color: #d8aaff;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+.gwimun-pos {
+  font-size: .82rem;
+  color: #c8aaff;
+  font-weight: 600;
+}
+.gwimun-ilji {
+  font-size: .7rem;
+  padding: .1rem .35rem;
+  border-radius: 3px;
+  background: rgba(201,168,76,.2);
+  color: var(--gold);
+  margin-left: auto;
+}
+.gwimun-desc {
+  font-size: .82rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+.gwimun-extra {
+  margin-top: .3rem;
+  font-size: .78rem;
+  color: #c8aaff;
+  line-height: 1.5;
+}
+
+/* 세운 행 원진·귀문 배지 */
+.run-wonjin { background: #7a1a1a; color: #ffb0b0; }
+.run-gwimun { background: #3a1a70; color: #c8a0ff; }
+.run-has-wonjin { background: rgba(120,30,30,.1); }
+
 /* ─── 암합(暗合) ─── */
 .amhap-label { color: #9b7ebd !important; }
 .amhap-list {
