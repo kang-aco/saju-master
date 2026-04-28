@@ -214,7 +214,130 @@
       </section>
 
       <div class="action-row">
+        <button onclick="openGunghap()" class="btn-gunghap">💞 상대방과 궁합 분석</button>
         <button onclick="resetForm()" class="btn-reset">↩ 새로 분석</button>
+      </div>
+    </div>
+
+    <!-- ── 궁합 입력 모달 ─────────────────────────────────────── -->
+    <div id="gunghapModal" class="gh-modal hidden">
+      <div class="gh-modal-bg" onclick="closeGunghap()"></div>
+      <div class="gh-modal-card">
+        <button class="gh-close" onclick="closeGunghap()">✕</button>
+        <h2>💞 상대방 정보 입력</h2>
+        <p class="gh-sub">두 사람의 사주를 비교 분석합니다.</p>
+
+        <form id="gunghapForm">
+          <div class="gh-name-row">
+            <label>상대 이름 (선택)</label>
+            <input type="text" id="gh_name" placeholder="예: 홍길동" maxlength="20" />
+          </div>
+
+          <div class="cal-toggle-wrap">
+            <div class="cal-toggle">
+              <button type="button" class="cal-btn active" id="gh-btn-solar" onclick="setGhCalType('solar')">양력</button>
+              <button type="button" class="cal-btn"        id="gh-btn-lunar" onclick="setGhCalType('lunar')">음력</button>
+            </div>
+            <span class="cal-hint" id="ghCalHint"></span>
+          </div>
+
+          <div class="date-selects">
+            <div class="select-wrap"><label>년</label><select id="gh_year"></select></div>
+            <div class="select-wrap"><label>월</label><select id="gh_month"></select></div>
+            <div class="select-wrap"><label>일</label><select id="gh_day"></select></div>
+            <div class="select-wrap hour-wrap">
+              <label>시</label>
+              <select id="gh_hour">
+                <option value="-1">시간 모름</option>
+                <option value="0">子時 (23–01시)</option>
+                <option value="1">丑時 (01–03시)</option>
+                <option value="2">寅時 (03–05시)</option>
+                <option value="3">卯時 (05–07시)</option>
+                <option value="4">辰時 (07–09시)</option>
+                <option value="5">巳時 (09–11시)</option>
+                <option value="6">午時 (11–13시)</option>
+                <option value="7">未時 (13–15시)</option>
+                <option value="8">申時 (15–17시)</option>
+                <option value="9">酉時 (17–19시)</option>
+                <option value="10">戌時 (19–21시)</option>
+                <option value="11">亥時 (21–23시)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="leap-row hidden" id="ghLeapRow">
+            <label class="radio-label">
+              <input type="checkbox" id="gh_isLeapMonth" /> 윤달 (閏月)
+            </label>
+          </div>
+
+          <div class="gender-row">
+            <span class="gender-label">상대 성별</span>
+            <label class="radio-label">
+              <input type="radio" name="gh_gender" value="남" /> 남자
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="gh_gender" value="여" checked /> 여자
+            </label>
+          </div>
+
+          <!-- 상대 사주 미리보기 -->
+          <div class="pillars-preview" id="ghPreview">
+            <div class="preview-header">상대 사주 원국 <span id="ghPrevBadge"></span></div>
+            <div class="preview-table">
+              <div class="preview-pillar"><div class="pp-label">시주</div><div class="pp-gan pp-char" id="gh-siju-gan">—</div><div class="pp-ji pp-char" id="gh-siju-ji">—</div></div>
+              <div class="preview-pillar ilju-col"><div class="pp-label">일주 ★</div><div class="pp-gan pp-char" id="gh-ilju-gan">—</div><div class="pp-ji pp-char" id="gh-ilju-ji">—</div></div>
+              <div class="preview-pillar"><div class="pp-label">월주</div><div class="pp-gan pp-char" id="gh-wolju-gan">—</div><div class="pp-ji pp-char" id="gh-wolju-ji">—</div></div>
+              <div class="preview-pillar"><div class="pp-label">연주</div><div class="pp-gan pp-char" id="gh-yunju-gan">—</div><div class="pp-ji pp-char" id="gh-yunju-ji">—</div></div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-analyze">
+            <span class="btn-icon">💞</span> 궁합 분석 시작
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── 궁합 결과 섹션 ─────────────────────────────────────── -->
+    <div id="gunghapResultSection" class="hidden">
+      <div id="gunghapLoading" class="hidden">
+        <div class="loader-wrap">
+          <div class="loader-symbol">💞</div>
+          <p class="loader-text">두 사람의 궁합을 분석하고 있습니다…</p>
+          <p class="loader-sub">자평진전 일주·일지·오행 교차 비교 중</p>
+        </div>
+      </div>
+
+      <div id="gunghapContent" class="hidden">
+        <section class="card gh-summary-card">
+          <div class="gh-summary-head">
+            <h2>💞 궁합 분석 결과</h2>
+            <button class="btn-reset gh-back-btn" onclick="closeGunghapResult()">↩ 닫기</button>
+          </div>
+          <div class="gh-twosaju" id="ghTwoSaju"></div>
+          <div class="gh-grade-box" id="ghGradeBox"></div>
+        </section>
+
+        <section class="card">
+          <h2>📊 카테고리별 분석</h2>
+          <div id="ghCategories"></div>
+        </section>
+
+        <section class="card">
+          <h2>✨ 핵심 하이라이트</h2>
+          <div id="ghHighlights"></div>
+        </section>
+
+        <section class="card ai-card">
+          <h2><span class="ai-badge">AI</span> Claude 종합 해석</h2>
+          <div id="ghAiResult" class="ai-content"></div>
+        </section>
+
+        <div class="action-row">
+          <button onclick="openGunghap()" class="btn-gunghap">💞 다른 사람과 궁합</button>
+          <button onclick="closeGunghapResult()" class="btn-reset">↩ 내 사주 결과로</button>
+        </div>
       </div>
     </div>
   </main>

@@ -278,6 +278,12 @@ document.getElementById('sajuForm').addEventListener('submit', async (e) => {
     ...(calType === 'lunar' && { is_leap_month: isLeap }),
   };
 
+  // 궁합 분석을 위해 본인 정보 저장 (sijinIdx 포함)
+  window._lastSubmittedPayload = {
+    birth_year: solarY, birth_month: solarM, birth_day: solarD,
+    sijinIdx, gender,
+  };
+
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   showLoading();
@@ -694,4 +700,319 @@ function row(label, val, valCls='') {
 }
 function escapeHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ════════════════════════════════════════════
+//  💞 궁합 (宮合) 분석
+// ════════════════════════════════════════════
+
+let ghCalType = 'solar';
+let ghInitialized = false;
+let lastUserAnalysis = null; // 본인 분석 결과 보관
+
+function initGunghapSelects() {
+  if (ghInitialized) return;
+  ghInitialized = true;
+
+  const yearSel = document.getElementById('gh_year');
+  const curYear = new Date().getFullYear();
+  for (let y = 1920; y <= curYear; y++) {
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y + '년';
+    if (y === 1992) opt.selected = true;
+    yearSel.appendChild(opt);
+  }
+  const monthSel = document.getElementById('gh_month');
+  for (let m = 1; m <= 12; m++) {
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = m + '월';
+    monthSel.appendChild(opt);
+  }
+  ghUpdateDaySelect();
+
+  document.getElementById('gh_year').addEventListener('change', ghUpdateDaySelect);
+  document.getElementById('gh_month').addEventListener('change', ghUpdateDaySelect);
+  document.getElementById('gh_day').addEventListener('change', ghUpdatePreview);
+  document.getElementById('gh_hour').addEventListener('change', ghUpdatePreview);
+  document.getElementById('gh_isLeapMonth').addEventListener('change', ghUpdatePreview);
+}
+
+function setGhCalType(type) {
+  ghCalType = type;
+  document.getElementById('gh-btn-solar').classList.toggle('active', type === 'solar');
+  document.getElementById('gh-btn-lunar').classList.toggle('active', type === 'lunar');
+  document.getElementById('ghLeapRow').classList.toggle('hidden', type === 'solar');
+  document.getElementById('ghCalHint').textContent =
+    type === 'lunar' ? '음력 날짜를 입력하면 양력으로 자동 변환합니다.' : '';
+
+  if (type === 'lunar') {
+    const sel = document.getElementById('gh_day');
+    const prev = parseInt(sel.value, 10) || 1;
+    sel.innerHTML = '';
+    for (let d = 1; d <= 30; d++) {
+      const opt = document.createElement('option'); opt.value = d; opt.textContent = d + '일';
+      sel.appendChild(opt);
+    }
+    sel.value = Math.min(prev, 30);
+  } else {
+    ghUpdateDaySelect();
+  }
+  ghUpdatePreview();
+}
+
+function ghUpdateDaySelect() {
+  if (ghCalType === 'lunar') return;
+  const year = parseInt(document.getElementById('gh_year').value, 10);
+  const month = parseInt(document.getElementById('gh_month').value, 10);
+  const sel = document.getElementById('gh_day');
+  const prev = parseInt(sel.value, 10) || 1;
+  const max = new Date(year, month, 0).getDate();
+  sel.innerHTML = '';
+  for (let d = 1; d <= max; d++) {
+    const opt = document.createElement('option'); opt.value = d; opt.textContent = d + '일';
+    sel.appendChild(opt);
+  }
+  sel.value = Math.min(prev, max);
+  ghUpdatePreview();
+}
+
+function ghUpdatePreview() {
+  const year = parseInt(document.getElementById('gh_year').value, 10);
+  const month = parseInt(document.getElementById('gh_month').value, 10);
+  const day = parseInt(document.getElementById('gh_day').value, 10);
+  const sijinIdx = parseInt(document.getElementById('gh_hour').value, 10);
+  const isLeap = document.getElementById('gh_isLeapMonth').checked;
+
+  if (!year || !month || !day) return;
+
+  let solarY = year, solarM = month, solarD = day;
+  let badge = '';
+  if (ghCalType === 'lunar') {
+    const conv = lunarToSolar(year, month, day, isLeap);
+    if (!conv) { document.getElementById('ghPrevBadge').textContent = '⚠ 잘못된 음력'; return; }
+    solarY = conv.year; solarM = conv.month; solarD = conv.day;
+    badge = `<span class="lunar-badge">음력→양력 ${solarY}.${solarM}.${solarD}</span>`;
+  }
+  document.getElementById('ghPrevBadge').innerHTML = badge;
+
+  const { yunju, wolju, ilju, siju } = calcSajuFromSolar(solarY, solarM, solarD, sijinIdx);
+  document.getElementById('gh-yunju-gan').textContent = yunju[0];
+  document.getElementById('gh-yunju-ji').textContent  = yunju[1];
+  document.getElementById('gh-wolju-gan').textContent = wolju[0];
+  document.getElementById('gh-wolju-ji').textContent  = wolju[1];
+  document.getElementById('gh-ilju-gan').textContent  = ilju[0];
+  document.getElementById('gh-ilju-ji').textContent   = ilju[1];
+  if (siju) {
+    document.getElementById('gh-siju-gan').textContent = siju[0];
+    document.getElementById('gh-siju-ji').textContent  = siju[1];
+  } else {
+    document.getElementById('gh-siju-gan').textContent = '?';
+    document.getElementById('gh-siju-ji').textContent  = '?';
+  }
+}
+
+function openGunghap() {
+  initGunghapSelects();
+  document.getElementById('gunghapModal').classList.remove('hidden');
+  ghUpdatePreview();
+}
+function closeGunghap() {
+  document.getElementById('gunghapModal').classList.add('hidden');
+}
+function closeGunghapResult() {
+  document.getElementById('gunghapResultSection').classList.add('hidden');
+  document.getElementById('resultSection').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── 본인 분석 결과를 저장하기 위해 기존 폼 제출 후 보관
+const _origDisplayResult = window.displayResult;
+// (displayResult가 없으면 아래에서 우회 — payload는 폼 제출 시점에 저장)
+
+// 사주에서 가공된 person 객체 만들기
+function buildPersonFromSaju(year, month, day, sijinIdx, gender, name = '') {
+  const { yunju, wolju, ilju, siju } = calcSajuFromSolar(year, month, day, sijinIdx);
+  const ilgan = ilju[0];
+  const ilji  = ilju[1];
+  const chungganList = [yunju[0], wolju[0], ilju[0], siju ? siju[0] : ''];
+  const jijiList     = [yunju[1], wolju[1], ilju[1], siju ? siju[1] : ''];
+  return {
+    name,
+    gender,
+    ilgan, ilji, ilju, yunju, wolju, siju,
+    chungganList, jijiList,
+    birth_year: year, birth_month: month, birth_day: day, sijinIdx,
+  };
+}
+
+// 궁합 폼 제출
+document.addEventListener('DOMContentLoaded', () => {
+  const ghForm = document.getElementById('gunghapForm');
+  if (!ghForm) return;
+  ghForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await submitGunghap();
+  });
+});
+
+async function submitGunghap() {
+  // 본인 정보가 분석되어 있어야 함
+  if (!window._lastSubmittedPayload) {
+    alert('먼저 본인 사주를 분석해 주세요.');
+    return;
+  }
+
+  // 상대 정보 수집
+  const year   = parseInt(document.getElementById('gh_year').value, 10);
+  const month  = parseInt(document.getElementById('gh_month').value, 10);
+  const day    = parseInt(document.getElementById('gh_day').value, 10);
+  const sijin  = parseInt(document.getElementById('gh_hour').value, 10);
+  const gender = document.querySelector('input[name="gh_gender"]:checked').value;
+  const name   = document.getElementById('gh_name').value.trim();
+  const isLeap = document.getElementById('gh_isLeapMonth').checked;
+
+  let solarY = year, solarM = month, solarD = day;
+  if (ghCalType === 'lunar') {
+    const conv = lunarToSolar(year, month, day, isLeap);
+    if (!conv) { alert('유효하지 않은 음력 날짜입니다.'); return; }
+    solarY = conv.year; solarM = conv.month; solarD = conv.day;
+  }
+
+  const personA = buildPersonFromSaju(
+    window._lastSubmittedPayload.birth_year,
+    window._lastSubmittedPayload.birth_month,
+    window._lastSubmittedPayload.birth_day,
+    window._lastSubmittedPayload.sijinIdx,
+    window._lastSubmittedPayload.gender,
+    '본인'
+  );
+  const personB = buildPersonFromSaju(solarY, solarM, solarD, sijin, gender, name);
+
+  closeGunghap();
+  document.getElementById('resultSection').classList.add('hidden');
+  document.getElementById('gunghapResultSection').classList.remove('hidden');
+  document.getElementById('gunghapLoading').classList.remove('hidden');
+  document.getElementById('gunghapContent').classList.add('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  try {
+    const res = await fetch('/api/gunghap', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ personA, personB }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || '궁합 분석 실패');
+
+    renderGunghap(data, personA, personB);
+  } catch (err) {
+    alert('궁합 분석 오류: ' + err.message);
+    closeGunghapResult();
+  } finally {
+    document.getElementById('gunghapLoading').classList.add('hidden');
+  }
+}
+
+function renderGunghap(data, A, B) {
+  const g = data.gunghap;
+
+  // 두 사주 표시
+  document.getElementById('ghTwoSaju').innerHTML = `
+    <div class="gh-person gh-person-A">
+      <div class="gh-person-label">A · ${escapeHtml(A.name || '본인')} (${A.gender})</div>
+      <div class="gh-person-pillars">
+        <span>${A.yunju}</span><span>${A.wolju}</span>
+        <span class="gh-pillar-ilju">${A.ilju}</span>
+        <span>${A.siju || '?'}</span>
+      </div>
+      <div class="gh-person-key">일간 ${A.ilgan} · 일지 ${A.ilji}</div>
+    </div>
+    <div class="gh-vs">💞</div>
+    <div class="gh-person gh-person-B">
+      <div class="gh-person-label">B · ${escapeHtml(B.name || '상대')} (${B.gender})</div>
+      <div class="gh-person-pillars">
+        <span>${B.yunju}</span><span>${B.wolju}</span>
+        <span class="gh-pillar-ilju">${B.ilju}</span>
+        <span>${B.siju || '?'}</span>
+      </div>
+      <div class="gh-person-key">일간 ${B.ilgan} · 일지 ${B.ilji}</div>
+    </div>
+  `;
+
+  // 점수와 등급
+  const scoreClass = g.총점 >= 35 ? 'gh-score-good' : g.총점 >= 0 ? 'gh-score-mid' : 'gh-score-bad';
+  document.getElementById('ghGradeBox').innerHTML = `
+    <div class="gh-grade gh-grade-${g.등급색상}">
+      <div class="gh-grade-label">${escapeHtml(g.등급)}</div>
+      <div class="gh-grade-score ${scoreClass}">${g.총점 >= 0 ? '+' : ''}${g.총점}점</div>
+    </div>
+    <p class="gh-grade-summary">${escapeHtml(g.등급요약)}</p>
+  `;
+
+  // 카테고리별
+  const catEntries = Object.entries(g.카테고리);
+  document.getElementById('ghCategories').innerHTML = catEntries.map(([name, cat]) => {
+    const sCls = cat.점수 >= 5 ? 'gh-score-good' : cat.점수 >= 0 ? 'gh-score-mid' : 'gh-score-bad';
+    const items = (cat.이벤트 ?? []).map(e => `
+      <div class="gh-cat-event">
+        <span class="gh-event-tag ${eventClass(e)}">${e.종류}</span>
+        <span class="gh-event-eff">${e.효과 || ''}</span>
+        <span class="gh-event-desc">${escapeHtml(e.설명 || '')}</span>
+      </div>`).join('') || '<div class="gh-cat-empty">특이사항 없음</div>';
+
+    let extra = '';
+    if (name === '일간 십성' && cat.AtoB) {
+      extra = `<div class="gh-cat-extra">A→B 십성: <strong>${cat.AtoB}</strong> | B→A 십성: <strong>${cat.BtoA}</strong></div>`;
+    } else if (name === '지지 교차' && cat.카운트) {
+      const c = cat.카운트;
+      extra = `<div class="gh-cat-extra">합 ${c.합} · 충 ${c.충} · 원진 ${c.원진} · 귀문 ${c.귀문}</div>`;
+    }
+
+    return `<div class="gh-category">
+      <div class="gh-cat-header">
+        <span class="gh-cat-name">${name}</span>
+        <span class="gh-cat-score ${sCls}">${cat.점수 >= 0 ? '+' : ''}${cat.점수}</span>
+      </div>
+      ${extra}
+      <div class="gh-cat-events">${items}</div>
+    </div>`;
+  }).join('');
+
+  // 핵심 하이라이트
+  const hl = g.하이라이트 ?? [];
+  document.getElementById('ghHighlights').innerHTML = hl.length
+    ? hl.map(e => `<div class="gh-highlight ${eventClass(e)}">
+        <div class="gh-highlight-head">
+          <span class="gh-highlight-type">${e.종류}</span>
+          <span class="gh-highlight-eff">${e.효과 || ''}</span>
+          <span class="gh-highlight-mark">${e.길흉 || ''}</span>
+        </div>
+        <div class="gh-highlight-desc">${escapeHtml(e.설명 || '')}</div>
+      </div>`).join('')
+    : '<p style="color:var(--muted);font-size:.85rem">강한 영향 요소가 발견되지 않았습니다. 평이한 관계입니다.</p>';
+
+  // AI 해석
+  const ai = data.ai_interpretation;
+  if (ai) {
+    const html = escapeHtml(ai)
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    document.getElementById('ghAiResult').innerHTML = html;
+  } else {
+    document.getElementById('ghAiResult').innerHTML =
+      '<p style="color:var(--muted)">AI 해석이 없습니다.</p>';
+  }
+
+  document.getElementById('gunghapContent').classList.remove('hidden');
+}
+
+function eventClass(e) {
+  const g = e.길흉 || '';
+  if (g.includes('대길') || g.includes('★★★')) return 'gh-ev-best';
+  if (g.includes('길')) return 'gh-ev-good';
+  if (g.includes('주의')) return 'gh-ev-warn';
+  if (g.includes('흉') || g.includes('⛔')) return 'gh-ev-bad';
+  if (g.includes('끌림') || g.includes('♥')) return 'gh-ev-eros';
+  if (g.includes('양면')) return 'gh-ev-mixed';
+  return '';
 }
