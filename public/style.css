@@ -88,6 +88,64 @@ main {
 /* ─── Form ─── */
 .form-card h2 { font-size: 1.1rem; }
 
+/* ─── 양력/음력 토글 ─── */
+.cal-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  margin-bottom: 1.2rem;
+}
+.cal-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.cal-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: .88rem;
+  padding: .4rem 1.1rem;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  letter-spacing: .04em;
+}
+.cal-btn.active {
+  background: var(--gold);
+  color: #0d0f14;
+  font-weight: 700;
+}
+.cal-hint {
+  font-size: .75rem;
+  color: var(--muted);
+}
+
+/* 윤달 체크박스 */
+.leap-row {
+  margin-bottom: .8rem;
+  margin-top: -.4rem;
+}
+.leap-row input[type="checkbox"] {
+  accent-color: var(--gold);
+  width: 15px; height: 15px;
+  cursor: pointer;
+}
+
+/* 음력→양력 변환 배지 */
+.lunar-badge {
+  font-size: .68rem;
+  background: rgba(91,141,238,.18);
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  border-radius: 4px;
+  padding: .1rem .45rem;
+  letter-spacing: .02em;
+  vertical-align: middle;
+  margin-left: .3rem;
+}
+
 /* 날짜 선택 행 */
 .date-selects {
   display: flex;

@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>사주팔자 — 자평진전 AI 분석</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- 음력↔양력 변환 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/korean-lunar-calendar/dist/korean-lunar-calendar.js"></script>
 </head>
 <body>
   <header>
@@ -19,6 +21,15 @@
       <h2>생년월일시 입력</h2>
 
       <form id="sajuForm">
+
+        <!-- 양력/음력 토글 -->
+        <div class="cal-toggle-wrap">
+          <div class="cal-toggle">
+            <button type="button" class="cal-btn active" id="btn-solar" onclick="setCalType('solar')">양력</button>
+            <button type="button" class="cal-btn"        id="btn-lunar" onclick="setCalType('lunar')">음력</button>
+          </div>
+          <span class="cal-hint" id="calHint"></span>
+        </div>
 
         <!-- 생년월일시 선택 -->
         <div class="date-selects">
@@ -54,6 +65,13 @@
           </div>
         </div>
 
+        <!-- 윤달 (음력 선택 시 표시) -->
+        <div class="leap-row hidden" id="leapRow">
+          <label class="radio-label">
+            <input type="checkbox" id="isLeapMonth" /> 윤달 (閏月)
+          </label>
+        </div>
+
         <!-- 성별 -->
         <div class="gender-row">
           <span class="gender-label">성별</span>
@@ -67,7 +85,7 @@
 
         <!-- 사주 원국 자동 미리보기 -->
         <div class="pillars-preview" id="pillarsPreview">
-          <div class="preview-header">사주 원국 (자동 계산)</div>
+          <div class="preview-header">사주 원국 (자동 계산) <span id="previewCalBadge"></span></div>
           <div class="preview-table">
             <div class="preview-pillar" id="prev-siju">
               <div class="pp-label">시주(時)</div>
