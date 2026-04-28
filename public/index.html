@@ -173,6 +173,28 @@
         <div id="daewunResult" class="daewun-scroll"></div>
       </section>
 
+      <!-- 세운·월운·일운 -->
+      <section class="card">
+        <h2>세운 · 월운 · 일운</h2>
+
+        <div class="run-tabs">
+          <button class="run-tab active" onclick="switchRunTab('segun',this)">세운 (年運)</button>
+          <button class="run-tab"        onclick="switchRunTab('wolun',this)">월운 (月運)</button>
+          <button class="run-tab"        onclick="switchRunTab('ilun', this)">일운 (日運)</button>
+        </div>
+
+        <div class="run-panel" id="panel-segun">
+          <div class="run-list" id="segunResult"></div>
+        </div>
+        <div class="run-panel hidden" id="panel-wolun">
+          <div class="run-grid" id="wolunResult"></div>
+        </div>
+        <div class="run-panel hidden" id="panel-ilun">
+          <p class="run-month-label" id="ilunMonthLabel"></p>
+          <div class="run-day-grid" id="ilunResult"></div>
+        </div>
+      </section>
+
       <!-- 지지 관계 · 신살 -->
       <section class="card">
         <h2>지지 관계 · 신살</h2>

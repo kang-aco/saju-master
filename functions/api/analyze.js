@@ -9,6 +9,7 @@ import { fullYongsinAnalysis } from '../_lib/yongsin.js';
 import { calculateDaewun } from '../_lib/calculator.js';
 import { analyzeAllDaewun } from '../_lib/analyzer.js';
 import { getSegunGanjji, analyzeYearsRange } from '../_lib/segun_linker.js';
+import { analyzeSegunList, analyzeWolunOfYear, analyzeIlunOfMonth } from '../_lib/wolun_ilun.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -223,9 +224,26 @@ export async function onRequest(context) {
       전반: da.천간분석.길흉, 후반: da.지지분석.길흉,
     }));
 
+    // 세운·월운·일운 분석
+    const now         = new Date();
+    const currentYear  = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    const segunList = analyzeSegunList(
+      currentYear - 1, currentYear + 3,
+      ilgan, wolji, chungganList, jijiList, gyukName
+    );
+    const wolunList = analyzeWolunOfYear(
+      currentYear,
+      ilgan, wolji, chungganList, jijiList, gyukName
+    );
+    const ilunList = analyzeIlunOfMonth(
+      currentYear, currentMonth,
+      ilgan, wolji, chungganList, jijiList, gyukName
+    );
+
     // Claude AI 해석 (API 키 없으면 스킵)
     let aiInterpretation = '';
-    const currentYear = new Date().getFullYear();
     if (env.CLAUDE_API_KEY) {
       const prompt = buildClaudePrompt({
         saju: { birth_year, birth_month, birth_day, gender, yunju, wolju, ilju, siju },
@@ -249,6 +267,10 @@ export async function onRequest(context) {
       gyuk_analysis: gyukResult,
       yongsin_analysis: yongsinResult,
       daewun: { 기본정보: { 요약: daewunResult.요약, 순역행: daewunResult.순역행, 절기정보: daewunResult.절기정보, 대운시작: daewunResult.대운시작 }, 목록: daewunResult.대운목록, 흐름요약: daewunSummary },
+      segun_list: segunList,
+      wolun_list: wolunList,
+      ilun_list:  ilunList,
+      current_date: { year: currentYear, month: currentMonth, day: now.getDate() },
       ai_interpretation: aiInterpretation,
     };
 

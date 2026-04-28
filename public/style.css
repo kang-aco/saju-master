@@ -339,6 +339,116 @@ input[type="radio"] { accent-color: var(--gold); width: 16px; height: 16px; }
 .ganjji-row td  { font-size: 1.5rem; color: var(--gold-lite); letter-spacing: .1em; font-weight: 700; }
 .ilju-col        { background: rgba(201,168,76,.08); }
 
+/* ─── 세운·월운·일운 탭 ─── */
+.run-tabs {
+  display: flex;
+  gap: .4rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: .6rem;
+}
+.run-tab {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: .82rem;
+  padding: .35rem .9rem;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+  letter-spacing: .03em;
+}
+.run-tab.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #0d0f14;
+  font-weight: 700;
+}
+.run-panel { min-height: 60px; }
+.run-month-label {
+  font-size: .78rem;
+  color: var(--muted);
+  margin-bottom: .6rem;
+  letter-spacing: .03em;
+}
+
+/* 세운 리스트 */
+.run-list { display: flex; flex-direction: column; gap: .35rem; }
+.run-row {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .5rem .7rem;
+  border-radius: 8px;
+  background: var(--surface2);
+  font-size: .85rem;
+  flex-wrap: wrap;
+}
+.run-row.run-current {
+  border: 1px solid var(--gold);
+  background: rgba(201,168,76,.08);
+}
+.run-year    { width: 5.5rem; color: var(--gold); font-weight: 600; flex-shrink:0; }
+.run-ganjji  { width: 2.2rem; font-size: 1.05rem; color: var(--gold-lite); letter-spacing:.06em; flex-shrink:0; }
+.run-sipsung { width: 7rem; color: var(--muted); font-size: .78rem; flex-shrink:0; }
+.run-score   { width: 2.8rem; font-weight: 700; text-align:right; flex-shrink:0; }
+.run-giljung { font-size: .8rem; flex-shrink:0; }
+.run-events  { font-size: .72rem; color: var(--muted); margin-left:auto; }
+
+/* 월운 그리드 */
+.run-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .5rem;
+}
+@media (max-width: 600px) { .run-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 400px) { .run-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.run-cell {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .55rem .4rem;
+  text-align: center;
+  font-size: .78rem;
+}
+.run-cell.run-current { border-color: var(--gold); background: rgba(201,168,76,.08); }
+.rc-month  { font-size: .72rem; color: var(--muted); margin-bottom: .25rem; }
+.rc-ganjji { font-size: 1.15rem; color: var(--gold-lite); letter-spacing:.06em; font-weight:700; margin-bottom:.2rem; }
+.rc-sipsung{ font-size: .66rem; color: var(--muted); line-height:1.4; margin-bottom:.2rem; }
+.rc-score  { font-weight: 700; font-size: .8rem; }
+.rc-giljung{ font-size: .72rem; margin-top: .15rem; }
+
+/* 일운 그리드 */
+.run-day-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: .35rem;
+}
+@media (max-width: 500px) { .run-day-grid { grid-template-columns: repeat(5, 1fr); } }
+
+.run-day {
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: .4rem .2rem;
+  text-align: center;
+  cursor: default;
+  transition: transform .12s;
+}
+.run-day:hover { transform: translateY(-2px); }
+.run-day.run-current { border-color: var(--gold); }
+.rd-day    { font-size: .7rem; color: var(--muted); }
+.rd-ganjji { font-size: .95rem; letter-spacing:.05em; font-weight:700; margin: .1rem 0; }
+.rd-score  { font-size: .68rem; font-weight:600; }
+
+/* 점수 색상 */
+.run-best  { color: #f5c842; background: rgba(245,200,66,.07); }
+.run-good  { color: var(--green); }
+.run-neu   { color: var(--muted); }
+.run-bad   { color: var(--red); }
+.run-worst { color: #c04040; background: rgba(192,64,64,.07); }
+
 /* ─── Two Col ─── */
 .two-col {
   display: grid;

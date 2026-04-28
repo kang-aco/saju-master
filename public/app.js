@@ -331,6 +331,7 @@ function renderResult(data, payload) {
   renderGyuk(data);
   renderIlgan(data);
   renderDaewun(data, payload);
+  renderSegunWolunIlun(data);
   renderJijiSinsul(data);
   renderAI(data.ai_interpretation);
   show('resultSection');
@@ -416,6 +417,81 @@ function renderDaewun(data, payload) {
     </div>`;
   }).join('');
   document.getElementById('daewunResult').innerHTML = `<div class="daewun-list">${items}</div>`;
+}
+
+// ── 탭 전환 ────────────────────────────────
+function switchRunTab(name, btn) {
+  document.querySelectorAll('.run-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.run-panel').forEach(p => p.classList.add('hidden'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + name).classList.remove('hidden');
+}
+
+// ── 점수 → 색상 클래스 ─────────────────────
+function scoreClass(score) {
+  if (score >= 3) return 'run-best';
+  if (score >= 1) return 'run-good';
+  if (score === 0) return 'run-neu';
+  if (score >= -2) return 'run-bad';
+  return 'run-worst';
+}
+function scoreLabel(score) {
+  if (score >= 3) return '🌟최길';
+  if (score >= 1) return '🟢길';
+  if (score === 0) return '⚪평';
+  if (score >= -2) return '🔴흉';
+  return '⛔대흉';
+}
+
+// ── 세운·월운·일운 렌더링 ───────────────────
+function renderSegunWolunIlun(data) {
+  const cd = data.current_date ?? { year: new Date().getFullYear(), month: new Date().getMonth()+1, day: new Date().getDate() };
+
+  // ── 세운 ──
+  const segunList = data.segun_list ?? [];
+  document.getElementById('segunResult').innerHTML = segunList.map(item => {
+    const isCur = item.연도 === cd.year;
+    const cls   = scoreClass(item.점수);
+    const events = item.특별사건?.length
+      ? `<span class="run-events">${item.특별사건.join(' · ')}</span>` : '';
+    return `<div class="run-row${isCur ? ' run-current' : ''}">
+      <span class="run-year">${item.연도}년${isCur ? ' ★' : ''}</span>
+      <span class="run-ganjji">${item.간지}</span>
+      <span class="run-sipsung">${item.천간십성}/${item.지지십성}</span>
+      <span class="run-score ${cls}">${item.점수 >= 0 ? '+' : ''}${item.점수}</span>
+      <span class="run-giljung ${cls}">${scoreLabel(item.점수)}</span>
+      ${events}
+    </div>`;
+  }).join('');
+
+  // ── 월운 ──
+  const wolunList = data.wolun_list ?? [];
+  document.getElementById('wolunResult').innerHTML = wolunList.map(item => {
+    const isCur = item.solarMonth === cd.month;
+    const cls   = scoreClass(item.점수);
+    return `<div class="run-cell${isCur ? ' run-current' : ''}">
+      <div class="rc-month">${item.월}${isCur ? ' ★' : ''}</div>
+      <div class="rc-ganjji">${item.간지}</div>
+      <div class="rc-sipsung">${item.천간십성}<br>${item.지지십성}</div>
+      <div class="rc-score ${cls}">${item.점수 >= 0 ? '+' : ''}${item.점수}</div>
+      <div class="rc-giljung ${cls}">${scoreLabel(item.점수)}</div>
+    </div>`;
+  }).join('');
+
+  // ── 일운 ──
+  const ilunList  = data.ilun_list ?? [];
+  const todayDay  = cd.day;
+  document.getElementById('ilunMonthLabel').textContent =
+    `${cd.year}년 ${cd.month}월 일운 (오늘: ${cd.month}/${todayDay})`;
+  document.getElementById('ilunResult').innerHTML = ilunList.map(item => {
+    const isToday = item.day === todayDay;
+    const cls     = scoreClass(item.점수);
+    return `<div class="run-day${isToday ? ' run-current' : ''} ${cls}" title="${item.천간십성}/${item.지지십성}${item.특별사건?.length ? ' · ' + item.특별사건.join(',') : ''}">
+      <div class="rd-day">${item.day}</div>
+      <div class="rd-ganjji">${item.간지}</div>
+      <div class="rd-score">${item.점수 >= 0 ? '+' : ''}${item.점수}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderJijiSinsul(data) {
