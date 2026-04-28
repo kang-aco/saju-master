@@ -89,6 +89,19 @@ function lunarToSolar(lunarYear, lunarMonth, lunarDay, isLeap) {
 // ════════════════════════════════════════════
 
 let calType = 'solar'; // 'solar' | 'lunar'
+let aiProvider = 'claude'; // 'claude' | 'nvidia'
+let ghAiProvider = 'claude';
+
+function setAiProvider(p) {
+  aiProvider = p;
+  document.getElementById('aiProvClaude').classList.toggle('active', p === 'claude');
+  document.getElementById('aiProvNvidia').classList.toggle('active', p === 'nvidia');
+}
+function setGhAiProvider(p) {
+  ghAiProvider = p;
+  document.getElementById('ghAiProvClaude').classList.toggle('active', p === 'claude');
+  document.getElementById('ghAiProvNvidia').classList.toggle('active', p === 'nvidia');
+}
 
 function setCalType(type) {
   calType = type;
@@ -272,6 +285,7 @@ document.getElementById('sajuForm').addEventListener('submit', async (e) => {
   const payload = {
     birth_year: solarY, birth_month: solarM, birth_day: solarD, gender,
     yunju, wolju, ilju, siju,
+    ai_provider: aiProvider,
     // 입력 원본 정보 (참고용)
     input_cal_type: calType,
     input_year: year, input_month: month, input_day: day,
@@ -340,7 +354,7 @@ function renderResult(data, payload) {
   renderBokyumBanyumAlert(data);
   renderSegunWolunIlun(data);
   renderJijiSinsul(data);
-  renderAI(data.ai_interpretation);
+  renderAI(data.ai_interpretation, data.ai_provider);
   show('resultSection');
   document.getElementById('resultSection').scrollIntoView({ behavior:'smooth', block:'start' });
 }
@@ -680,16 +694,19 @@ function renderJijiSinsul(data) {
   document.getElementById('jijiResult').innerHTML = html;
 }
 
-function renderAI(text) {
+function renderAI(text, provider) {
   if (!text) {
     document.getElementById('aiResult').innerHTML =
-      '<p style="color:var(--muted)">AI 해석이 없습니다. CLAUDE_API_KEY 환경변수를 확인하세요.</p>';
+      '<p style="color:var(--muted)">AI 해석이 없습니다. CLAUDE_API_KEY 또는 NVIDIA_API_KEY를 환경변수에 등록하세요.</p>';
     return;
   }
+  const provBadge = provider
+    ? `<div class="ai-prov-used">사용 모델: <strong>${provider === 'nvidia' ? 'NVIDIA Llama 3.3' : 'Claude Sonnet 4.6'}</strong></div>`
+    : '';
   const html = escapeHtml(text)
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  document.getElementById('aiResult').innerHTML = html;
+  document.getElementById('aiResult').innerHTML = provBadge + html;
 }
 
 function row(label, val, valCls='') {
@@ -899,7 +916,7 @@ async function submitGunghap() {
     const res = await fetch('/api/gunghap', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ personA, personB }),
+      body: JSON.stringify({ personA, personB, ai_provider: ghAiProvider }),
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.error || '궁합 분석 실패');
@@ -994,10 +1011,13 @@ function renderGunghap(data, A, B) {
   // AI 해석
   const ai = data.ai_interpretation;
   if (ai) {
+    const provBadge = data.ai_provider
+      ? `<div class="ai-prov-used">사용 모델: <strong>${data.ai_provider === 'nvidia' ? 'NVIDIA Llama 3.3' : 'Claude Sonnet 4.6'}</strong></div>`
+      : '';
     const html = escapeHtml(ai)
       .replace(/^### (.+)$/gm, '<h3>$1</h3>')
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    document.getElementById('ghAiResult').innerHTML = html;
+    document.getElementById('ghAiResult').innerHTML = provBadge + html;
   } else {
     document.getElementById('ghAiResult').innerHTML =
       '<p style="color:var(--muted)">AI 해석이 없습니다.</p>';

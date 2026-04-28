@@ -111,6 +111,21 @@
           <div class="preview-note" id="previewNote"></div>
         </div>
 
+        <!-- AI 모델 선택 -->
+        <div class="ai-provider-row">
+          <span class="ai-provider-label">AI 모델</span>
+          <div class="ai-provider-toggle">
+            <button type="button" class="ai-prov-btn active" id="aiProvClaude" onclick="setAiProvider('claude')">
+              <span class="prov-name">Claude</span>
+              <span class="prov-tag">정밀 · 유료</span>
+            </button>
+            <button type="button" class="ai-prov-btn" id="aiProvNvidia" onclick="setAiProvider('nvidia')">
+              <span class="prov-name">NVIDIA</span>
+              <span class="prov-tag">Llama 3.3 · 무료</span>
+            </button>
+          </div>
+        </div>
+
         <button type="submit" id="submitBtn" class="btn-analyze">
           <span class="btn-icon">✦</span> 사주 분석 시작
         </button>
@@ -289,6 +304,21 @@
               <div class="preview-pillar ilju-col"><div class="pp-label">일주 ★</div><div class="pp-gan pp-char" id="gh-ilju-gan">—</div><div class="pp-ji pp-char" id="gh-ilju-ji">—</div></div>
               <div class="preview-pillar"><div class="pp-label">월주</div><div class="pp-gan pp-char" id="gh-wolju-gan">—</div><div class="pp-ji pp-char" id="gh-wolju-ji">—</div></div>
               <div class="preview-pillar"><div class="pp-label">연주</div><div class="pp-gan pp-char" id="gh-yunju-gan">—</div><div class="pp-ji pp-char" id="gh-yunju-ji">—</div></div>
+            </div>
+          </div>
+
+          <!-- 궁합용 AI 모델 선택 -->
+          <div class="ai-provider-row">
+            <span class="ai-provider-label">AI 모델</span>
+            <div class="ai-provider-toggle">
+              <button type="button" class="ai-prov-btn active" id="ghAiProvClaude" onclick="setGhAiProvider('claude')">
+                <span class="prov-name">Claude</span>
+                <span class="prov-tag">정밀 · 유료</span>
+              </button>
+              <button type="button" class="ai-prov-btn" id="ghAiProvNvidia" onclick="setGhAiProvider('nvidia')">
+                <span class="prov-name">NVIDIA</span>
+                <span class="prov-tag">Llama 3.3 · 무료</span>
+              </button>
             </div>
           </div>
 

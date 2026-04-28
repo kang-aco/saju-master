@@ -2,6 +2,7 @@
 // 두 사람 사주 궁합 분석 API + Claude AI 종합 해석
 
 import { analyzeGunghap } from '../_lib/gunghap.js';
+import { callAI, getAvailableProviders } from '../_lib/ai_provider.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -84,32 +85,7 @@ ${fmtCat('띠 궁합')}
 - 한국어로 작성, 자연스러운 존댓말 사용`;
 }
 
-// ── Claude API 호출 ────────────────────────────────────────────────────
-async function callClaudeAPI(apiKey, prompt) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 5000,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Claude API 오류: ${response.status} ${errText}`);
-  }
-  const data = await response.json();
-  const text = data.content?.[0]?.text ?? '';
-  if (data.stop_reason === 'max_tokens') {
-    return text + '\n\n*(응답이 길이 제한으로 일부 잘렸습니다.)*';
-  }
-  return text;
-}
+// (Claude/NVIDIA 호출은 _lib/ai_provider.js의 callAI 사용)
 
 // ── 메인 핸들러 ────────────────────────────────────────────────────────
 export async function onRequest(context) {
@@ -146,19 +122,26 @@ export async function onRequest(context) {
     // 궁합 분석 실행
     const gunghap = analyzeGunghap(personA, personB);
 
-    // Claude AI 해석
+    // AI 해석 — provider 선택 (claude / nvidia)
+    const aiProvider = (data.ai_provider || 'claude').toLowerCase();
+    const available  = getAvailableProviders(env);
     let aiInterpretation = '';
-    if (env.CLAUDE_API_KEY) {
+    let usedProvider = aiProvider;
+    if (available.claude || available.nvidia) {
       const prompt = buildGunghapPrompt(gunghap, personA, personB);
-      aiInterpretation = await callClaudeAPI(env.CLAUDE_API_KEY, prompt);
+      aiInterpretation = await callAI(aiProvider, env, prompt, 5000);
+      if (aiProvider === 'claude' && !available.claude && available.nvidia) usedProvider = 'nvidia';
+      if (aiProvider === 'nvidia' && !available.nvidia && available.claude) usedProvider = 'claude';
     } else {
-      aiInterpretation = '※ Claude API 키가 설정되지 않아 자동 분석 결과만 표시됩니다.';
+      aiInterpretation = '※ AI API 키가 설정되지 않아 자동 분석 결과만 표시됩니다.';
     }
 
     return new Response(JSON.stringify({
       success: true,
       gunghap,
       ai_interpretation: aiInterpretation,
+      ai_provider: usedProvider,
+      ai_available: available,
     }), { status: 200, headers: CORS_HEADERS });
 
   } catch (err) {

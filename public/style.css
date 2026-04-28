@@ -573,6 +573,81 @@ input[type="radio"] { accent-color: var(--gold); width: 16px; height: 16px; }
   margin: 1.2rem 0 .4rem;
 }
 
+/* ─── AI Provider 선택 ─── */
+.ai-provider-row {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  margin: 1rem 0;
+  padding: .6rem .8rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.ai-provider-label {
+  font-size: .78rem;
+  color: var(--muted);
+  letter-spacing: .04em;
+}
+.ai-provider-toggle {
+  display: flex;
+  gap: .4rem;
+  flex: 1;
+}
+.ai-prov-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .15rem;
+  padding: .45rem .6rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.ai-prov-btn .prov-name {
+  font-size: .85rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+.ai-prov-btn .prov-tag {
+  font-size: .7rem;
+  opacity: .75;
+}
+.ai-prov-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold-lite);
+}
+.ai-prov-btn.active {
+  background: rgba(201,168,76,.12);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+#aiProvNvidia.active,
+#ghAiProvNvidia.active {
+  background: rgba(118,185,0,.12);
+  border-color: #76b900; /* NVIDIA 녹색 */
+  color: #a4e85c;
+}
+
+/* AI 결과 상단 사용 모델 배지 */
+.ai-prov-used {
+  font-size: .75rem;
+  color: var(--muted);
+  background: rgba(0,0,0,.25);
+  padding: .35rem .65rem;
+  border-radius: 6px;
+  margin-bottom: .8rem;
+  display: inline-block;
+}
+.ai-prov-used strong {
+  color: var(--gold-lite);
+}
+
 /* ─── 원진(怨嗔) 강조 태그 ─── */
 .rel-tag.wonjin {
   border-color: #c05050;

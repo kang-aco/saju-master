@@ -10,6 +10,7 @@ import { calculateDaewun } from '../_lib/calculator.js';
 import { analyzeAllDaewun } from '../_lib/analyzer.js';
 import { getSegunGanjji, analyzeYearsRange } from '../_lib/segun_linker.js';
 import { analyzeSegunList, analyzeWolunOfYear, analyzeIlunOfMonth, checkBokyumBanyum } from '../_lib/wolun_ilun.js';
+import { callAI, getAvailableProviders } from '../_lib/ai_provider.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -138,32 +139,7 @@ ${currentDw ? `- 대운: ${currentDw.간지} (${currentDw.나이}세~)` : '- 대
 마지막에 한 줄 요약을 넣어주세요: "✨ 핵심 한 줄: ..."`;
 }
 
-async function callClaudeAPI(apiKey, prompt) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 6000,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Claude API 오류: ${response.status} ${errText}`);
-  }
-  const data = await response.json();
-  const text  = data.content?.[0]?.text ?? '';
-  // 토큰 한도로 잘렸을 경우 안내 문구 추가
-  if (data.stop_reason === 'max_tokens') {
-    return text + '\n\n*(응답이 길이 제한으로 일부 잘렸습니다.)*';
-  }
-  return text;
-}
+// (callClaudeAPI는 _lib/ai_provider.js의 callAI로 대체됨)
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -300,16 +276,22 @@ export async function onRequest(context) {
       ilgan, wolji, chungganList, jijiList, gyukName
     );
 
-    // Claude AI 해석 (API 키 없으면 스킵)
+    // AI 해석 — provider 선택 (claude / nvidia)
+    const aiProvider = (body.ai_provider || 'claude').toLowerCase();
+    const available  = getAvailableProviders(env);
     let aiInterpretation = '';
-    if (env.CLAUDE_API_KEY) {
+    let usedProvider = aiProvider;
+    if (available.claude || available.nvidia) {
       const prompt = buildClaudePrompt({
         saju: { birth_year, birth_month, birth_day, gender, yunju, wolju, ilju, siju },
         ilgan, wolji, gyukResult, yongsinResult, daewunResult, ilStrength, ohengPower, sinsul, gongmang, currentYear
       });
-      aiInterpretation = await callClaudeAPI(env.CLAUDE_API_KEY, prompt);
+      aiInterpretation = await callAI(aiProvider, env, prompt, 6000);
+      // 폴백된 경우 실제 사용 provider 추적
+      if (aiProvider === 'claude' && !available.claude && available.nvidia) usedProvider = 'nvidia';
+      if (aiProvider === 'nvidia' && !available.nvidia && available.claude) usedProvider = 'claude';
     } else {
-      aiInterpretation = '※ Claude API 키가 설정되지 않았습니다. Cloudflare Pages 환경변수에 CLAUDE_API_KEY를 설정해 주세요.';
+      aiInterpretation = '※ AI API 키가 설정되지 않았습니다. CLAUDE_API_KEY 또는 NVIDIA_API_KEY를 환경변수에 등록해 주세요.';
     }
 
     const result = {
@@ -334,6 +316,8 @@ export async function onRequest(context) {
       ilun_list:  ilunList,
       current_date: { year: currentYear, month: currentMonth, day: now.getDate() },
       ai_interpretation: aiInterpretation,
+      ai_provider: usedProvider,
+      ai_available: available,
     };
 
     return new Response(JSON.stringify(result), { status: 200, headers: CORS_HEADERS });
