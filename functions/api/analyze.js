@@ -9,7 +9,7 @@ import { fullYongsinAnalysis } from '../_lib/yongsin.js';
 import { calculateDaewun } from '../_lib/calculator.js';
 import { analyzeAllDaewun } from '../_lib/analyzer.js';
 import { getSegunGanjji, analyzeYearsRange } from '../_lib/segun_linker.js';
-import { analyzeSegunList, analyzeWolunOfYear, analyzeIlunOfMonth } from '../_lib/wolun_ilun.js';
+import { analyzeSegunList, analyzeWolunOfYear, analyzeIlunOfMonth, checkBokyumBanyum } from '../_lib/wolun_ilun.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -248,6 +248,22 @@ export async function onRequest(context) {
       currentYear - 1, currentYear + 3,
       ilgan, wolji, chungganList, jijiList, gyukName
     );
+
+    // 대운 복음·반음 경보 (전체 대운 대상)
+    const bokyumBanyumDaewun = daewunResult.대운목록
+      .map(dw => ({
+        나이: dw.나이,
+        간지: dw.간지,
+        이벤트: checkBokyumBanyum(dw.간지, chungganList, jijiList),
+      }))
+      .filter(dw => dw.이벤트.length > 0);
+
+    // 세운 목록에 복음·반음 첨부
+    const segunListEnriched = segunList.map(item => ({
+      ...item,
+      복음반음: checkBokyumBanyum(item.간지, chungganList, jijiList),
+    }));
+
     const wolunList = analyzeWolunOfYear(
       currentYear,
       ilgan, wolji, chungganList, jijiList, gyukName
@@ -282,7 +298,8 @@ export async function onRequest(context) {
       gyuk_analysis: gyukResult,
       yongsin_analysis: yongsinResult,
       daewun: { 기본정보: { 요약: daewunResult.요약, 순역행: daewunResult.순역행, 절기정보: daewunResult.절기정보, 대운시작: daewunResult.대운시작 }, 목록: daewunResult.대운목록, 흐름요약: daewunSummary },
-      segun_list: segunList,
+      segun_list: segunListEnriched,
+      bokyum_banyum_daewun: bokyumBanyumDaewun,
       wolun_list: wolunList,
       ilun_list:  ilunList,
       current_date: { year: currentYear, month: currentMonth, day: now.getDate() },

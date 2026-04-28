@@ -331,6 +331,7 @@ function renderResult(data, payload) {
   renderGyuk(data);
   renderIlgan(data);
   renderDaewun(data, payload);
+  renderBokyumBanyumAlert(data);
   renderSegunWolunIlun(data);
   renderJijiSinsul(data);
   renderAI(data.ai_interpretation);
@@ -404,19 +405,78 @@ function renderDaewun(data, payload) {
   const scoreMap = {};
   for (const f of flow) scoreMap[f.간지] = f;
 
+  // 복음·반음 맵
+  const byMap = {};
+  for (const dw of (data.bokyum_banyum_daewun ?? [])) byMap[dw.간지] = dw.이벤트;
+
   const items = list.map(dw => {
     const isCurrent = dw.나이 <= curAge && curAge < dw.나이 + 10;
     const f   = scoreMap[dw.간지] ?? {};
     const sc  = f.점수 ?? 0;
     const cls = sc > 0 ? 'score-pos' : sc < 0 ? 'score-neg' : 'score-neu';
-    return `<div class="daewun-item${isCurrent?' current':''}">
+
+    const byEvents  = byMap[dw.간지] ?? [];
+    const hasBokym  = byEvents.some(e => e.유형 === '복음');
+    const hasBanyum = byEvents.some(e => e.유형 === '반음');
+    const byBadges  = [
+      hasBokym  ? '<span class="dw-by-badge dw-bokyum">복음</span>' : '',
+      hasBanyum ? '<span class="dw-by-badge dw-banyum">반음</span>' : '',
+    ].join('');
+
+    return `<div class="daewun-item${isCurrent?' current':''}${byEvents.length?' has-by':''}">
       <div class="dw-age">${dw.나이}세${isCurrent?' ★':''}</div>
       <div class="dw-ganjji">${dw.간지}</div>
       <div class="dw-score"><span class="${cls}">${sc>0?'+':''}${sc}</span></div>
       <div class="dw-label">${(f.길흉??'').replace(/[🟢🔴⚪🟡🌟✅⛔🟠]/g,'').trim()}</div>
+      ${byBadges ? `<div class="dw-by-badges">${byBadges}</div>` : ''}
     </div>`;
   }).join('');
   document.getElementById('daewunResult').innerHTML = `<div class="daewun-list">${items}</div>`;
+}
+
+// ── 복음·반음 경보 카드 ─────────────────────
+function renderBokyumBanyumAlert(data) {
+  const list = data.bokyum_banyum_daewun ?? [];
+
+  // 세운 복음·반음도 추출
+  const segunEvents = (data.segun_list ?? []).flatMap(item =>
+    (item.복음반음 ?? []).map(e => ({ 기간: `${item.연도}년 (세운 ${item.간지})`, ...e }))
+  );
+
+  if (list.length === 0 && segunEvents.length === 0) {
+    hide('byAlertSection');
+    return;
+  }
+  show('byAlertSection');
+
+  // 대운 이벤트 렌더
+  const daewunHtml = list.map(dw =>
+    dw.이벤트.map(e => byCard(e, `${dw.나이}세 대운 ${dw.간지}`)).join('')
+  ).join('');
+
+  // 세운 이벤트 렌더
+  const segunHtml = segunEvents.map(e => byCard(e, e.기간)).join('');
+
+  document.getElementById('byAlertContent').innerHTML =
+    `<p class="by-intro">대운·세운이 원국과 겹치거나(복음) 충돌(반음)하는 시기입니다. 해당 나이대에 특히 주의하세요.</p>` +
+    (daewunHtml ? `<div class="by-group-label">대운 복음·반음</div>${daewunHtml}` : '') +
+    (segunHtml  ? `<div class="by-group-label" style="margin-top:.8rem">세운 복음·반음</div>${segunHtml}` : '');
+}
+
+function byCard(e, period) {
+  const isBokym = e.유형 === '복음';
+  const cls     = isBokym ? 'by-bokyum' : 'by-banyum';
+  const badge   = isBokym ? '복음(伏吟)' : '반음(返吟)';
+  return `<div class="by-item ${cls}">
+    <div class="by-header">
+      <span class="by-badge">${badge}</span>
+      <span class="by-period">${period}</span>
+      <span class="by-kind">${e.종류}</span>
+      <span class="by-strength">${e.강도}</span>
+    </div>
+    <div class="by-target">대상: ${e.대상}</div>
+    <div class="by-desc">${e.해석}</div>
+  </div>`;
 }
 
 // ── 탭 전환 ────────────────────────────────
@@ -450,16 +510,24 @@ function renderSegunWolunIlun(data) {
   // ── 세운 ──
   const segunList = data.segun_list ?? [];
   document.getElementById('segunResult').innerHTML = segunList.map(item => {
-    const isCur = item.연도 === cd.year;
-    const cls   = scoreClass(item.점수);
+    const isCur     = item.연도 === cd.year;
+    const cls       = scoreClass(item.점수);
+    const byEvents  = item.복음반음 ?? [];
+    const hasBokym  = byEvents.some(e => e.유형 === '복음');
+    const hasBanyum = byEvents.some(e => e.유형 === '반음');
+    const byBadges  = [
+      hasBokym  ? '<span class="run-by-badge run-bokyum">복음</span>' : '',
+      hasBanyum ? '<span class="run-by-badge run-banyum">반음</span>' : '',
+    ].filter(Boolean).join('');
     const events = item.특별사건?.length
       ? `<span class="run-events">${item.특별사건.join(' · ')}</span>` : '';
-    return `<div class="run-row${isCur ? ' run-current' : ''}">
+    return `<div class="run-row${isCur ? ' run-current' : ''}${byEvents.length ? ' run-has-by' : ''}">
       <span class="run-year">${item.연도}년${isCur ? ' ★' : ''}</span>
       <span class="run-ganjji">${item.간지}</span>
       <span class="run-sipsung">${item.천간십성}/${item.지지십성}</span>
       <span class="run-score ${cls}">${item.점수 >= 0 ? '+' : ''}${item.점수}</span>
       <span class="run-giljung ${cls}">${scoreLabel(item.점수)}</span>
+      ${byBadges}
       ${events}
     </div>`;
   }).join('');
