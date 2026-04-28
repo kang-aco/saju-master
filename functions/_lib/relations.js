@@ -163,3 +163,103 @@ export function analyzeChungganRelation(g1, g2) {
   result['생극'] = ohengSaengGeuk(g1, g2);
   return result;
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  암합(暗合) 분석
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//
+//  명합(明合): 천간끼리의 공개된 합 → 이미 chungganHap으로 처리
+//  암합(暗合): 천간 또는 지지가 지지 속의 지장간(정기)과 이루는 숨겨진 합
+//
+//  두 가지 유형:
+//    ① 천간-지장간 암합: 원국 천간이 다른 지지의 지장간 정기와 천간합
+//    ② 지지-지지 암합:  두 지지의 지장간 정기끼리 천간합 (지지암합)
+//
+//  해석 포인트:
+//    - 일지(배우자궁) 관련 암합 → 이성·배우자 관계, 은밀한 인연
+//    - 드러나지 않는 합이므로 겉으로는 보이지 않는 관계·재물·기회
+
+function getJonggiStem(jiji) {
+  const found = (JANGGAN[jiji] || []).find(([, s]) => s === '정기');
+  return found ? found[0] : null;
+}
+
+const PILLAR_NAMES = ['연주', '월주', '일주', '시주'];
+
+/**
+ * @param {string[]} chungganList  — 원국 천간 4개 [연, 월, 일, 시]
+ * @param {string[]} jijiList      — 원국 지지 4개 [연, 월, 일, 시]
+ * @returns {{ 종류, 설명, 화오행, 위치, 강도, 이성관련 }[]}
+ */
+export function analyzeAmhap(chungganList, jijiList) {
+  const results = [];
+
+  // ── ① 천간-지장간 암합 ──────────────────────────────────────────────────
+  for (let gi = 0; gi < chungganList.length; gi++) {
+    const gan = chungganList[gi];
+    if (!gan) continue;
+    const hapTarget = CHUNGGAN_HAP[gan];           // 이 천간과 합하는 천간
+    if (!hapTarget) continue;
+
+    for (let ji = 0; ji < jijiList.length; ji++) {
+      if (gi === ji) continue;                     // 같은 주는 제외
+      const jiji = jijiList[ji];
+      if (!jiji) continue;
+      const jonggi = getJonggiStem(jiji);
+      if (!jonggi || jonggi !== hapTarget) continue;
+
+      const hwa = CHUNGGAN_HAP_HWA[pairKey(gan, jonggi)] ?? '불화';
+      const iljiRelated = (ji === 2) || (gi === 2); // 일주 관련 여부
+      const woljiRelated = (ji === 1) || (gi === 1);
+
+      results.push({
+        종류:   '천간-지장간 암합',
+        설명:   `${PILLAR_NAMES[gi]} ${gan} ↔ ${PILLAR_NAMES[ji]} ${jiji}(${jonggi}) 암합 — ${gan}${jonggi}합화${hwa}(合化${hwa})`,
+        화오행: hwa,
+        위치:   `${PILLAR_NAMES[gi]}天·${PILLAR_NAMES[ji]}地`,
+        글자:   `${gan}·${jiji}(${jonggi})`,
+        강도:   iljiRelated ? '★★★ 강' : woljiRelated ? '★★ 중' : '★ 약',
+        이성관련: iljiRelated,
+        해석:   iljiRelated
+          ? `일주(배우자궁)가 관여하는 암합입니다. 드러나지 않는 이성 인연이나 내면의 감정이 은밀히 작용하며, 비밀스러운 관계·숨겨진 감정·배우자와의 깊은 연결을 나타냅니다.`
+          : woljiRelated
+          ? `월주(格의 뿌리)가 관여합니다. 직업·신분과 연결된 숨겨진 기회나 암묵적 인연이 작용합니다.`
+          : `${PILLAR_NAMES[gi]}과 ${PILLAR_NAMES[ji]}의 기운이 내부적으로 끌어당깁니다. 표면에 드러나지 않는 인연·재물·기회가 있습니다.`,
+      });
+    }
+  }
+
+  // ── ② 지지-지지 암합 ────────────────────────────────────────────────────
+  for (let i = 0; i < jijiList.length; i++) {
+    for (let j = i + 1; j < jijiList.length; j++) {
+      const j1 = jijiList[i];
+      const j2 = jijiList[j];
+      if (!j1 || !j2) continue;
+      const jg1 = getJonggiStem(j1);
+      const jg2 = getJonggiStem(j2);
+      if (!jg1 || !jg2) continue;
+      if (CHUNGGAN_HAP[jg1] !== jg2) continue;
+
+      const hwa = CHUNGGAN_HAP_HWA[pairKey(jg1, jg2)] ?? '불화';
+      const iljiRelated = (i === 2 || j === 2);
+      const woljiRelated = (i === 1 || j === 1);
+
+      results.push({
+        종류:   '지지-지지 암합',
+        설명:   `${PILLAR_NAMES[i]} ${j1}(${jg1}) ↔ ${PILLAR_NAMES[j]} ${j2}(${jg2}) 지지암합 — ${jg1}${jg2}합화${hwa}(合化${hwa})`,
+        화오행: hwa,
+        위치:   `${PILLAR_NAMES[i]}地·${PILLAR_NAMES[j]}地`,
+        글자:   `${j1}(${jg1})·${j2}(${jg2})`,
+        강도:   iljiRelated ? '★★★ 강' : woljiRelated ? '★★ 중' : '★ 약',
+        이성관련: iljiRelated,
+        해석:   iljiRelated
+          ? `일지(배우자궁)가 관여하는 지지암합입니다. 지장간끼리의 은밀한 끌림으로, 숨겨진 이성 인연이나 배우자와의 깊은 내면적 결합을 나타냅니다.`
+          : woljiRelated
+          ? `월지와 관련한 지지암합으로, 직업·신분의 변화가 겉으로 드러나지 않고 내부적으로 작용합니다.`
+          : `${PILLAR_NAMES[i]}지와 ${PILLAR_NAMES[j]}지의 내부 기운이 서로 끌어당깁니다. 표면에 드러나지 않는 인연이나 기회가 숨겨져 있습니다.`,
+      });
+    }
+  }
+
+  return results;
+}

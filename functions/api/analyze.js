@@ -2,7 +2,7 @@
 // Cloudflare Pages Function — 사주 분석 API + Claude AI 해석
 
 import { CHUNGGAN, JIJI, JANGGAN, CHUNGGAN_OHENG, JIJI_OHENG, SIBI_UNSUNG } from '../_lib/tables.js';
-import { chungganSipsung, jijiSamhap, jijiBanghap, analyzeJijiRelation } from '../_lib/relations.js';
+import { chungganSipsung, jijiSamhap, jijiBanghap, analyzeJijiRelation, analyzeAmhap } from '../_lib/relations.js';
 import { calculateIlganStrength, analyzeOhengPower, checkGongmangInSaju, getAllSinsul } from '../_lib/sinsul.js';
 import { fullGyukAnalysis } from '../_lib/gyukguk.js';
 import { fullYongsinAnalysis } from '../_lib/yongsin.js';
@@ -229,6 +229,9 @@ export async function onRequest(context) {
       }
     }
 
+    // 암합 분석
+    const amhap = analyzeAmhap(chungganList, jijiList);
+
     // 삼합·방합
     const samhap = jijiSamhap(jijiList);
     const banghap = jijiBanghap(jijiList);
@@ -292,6 +295,7 @@ export async function onRequest(context) {
       ilgan_strength: ilStrength,
       oheng_power: ohengPower,
       jiji_relations: jijiRelations,
+      amhap,
       samhap, banghap,
       gongmang,
       sinsul,

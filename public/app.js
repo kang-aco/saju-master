@@ -564,6 +564,7 @@ function renderSegunWolunIlun(data) {
 
 function renderJijiSinsul(data) {
   const rels     = data.jiji_relations ?? [];
+  const amhap    = data.amhap ?? [];
   const sinsul   = data.sinsul ?? {};
   const samhap   = data.samhap ?? [];
   const banghap  = data.banghap ?? [];
@@ -586,6 +587,28 @@ function renderJijiSinsul(data) {
     html += `<div class="section-label" style="margin-top:.7rem">방합</div><div class="rel-list">` +
       banghap.map(s=>`<span class="rel-tag hap">${s.종류} (${s.오행})</span>`).join('') + '</div>';
   }
+
+  // ── 암합(暗合) ──────────────────────────────────────────────────────────
+  if (amhap.length) {
+    html += `<div class="section-label amhap-label" style="margin-top:.7rem">암합 (暗合) — 숨겨진 합</div>
+      <div class="amhap-list">`;
+    for (const ah of amhap) {
+      const starCls = ah.이성관련 ? 'amhap-item amhap-eros' : 'amhap-item';
+      html += `<div class="${starCls}">
+        <div class="amhap-header">
+          <span class="amhap-badge">${ah.종류 === '지지-지지 암합' ? '地支暗合' : '天干暗合'}</span>
+          <span class="amhap-glyph">${ah.글자}</span>
+          <span class="amhap-hwa">→ ${ah.화오행}화(化)</span>
+          <span class="amhap-pos">${ah.위치}</span>
+          <span class="amhap-strength">${ah.강도}</span>
+          ${ah.이성관련 ? '<span class="amhap-eros-badge">♥ 이성 관련</span>' : ''}
+        </div>
+        <div class="amhap-desc">${ah.해석}</div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
   if (gongmang.설명) {
     html += `<div class="section-label" style="margin-top:.7rem">공망</div>
       <div style="font-size:.85rem;color:var(--muted)">${gongmang.설명}</div>`;

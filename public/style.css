@@ -573,6 +573,79 @@ input[type="radio"] { accent-color: var(--gold); width: 16px; height: 16px; }
   margin: 1.2rem 0 .4rem;
 }
 
+/* ─── 암합(暗合) ─── */
+.amhap-label { color: #9b7ebd !important; }
+.amhap-list {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  margin-top: .4rem;
+}
+.amhap-item {
+  border: 1px solid #3a2f50;
+  border-left: 4px solid #7c5cbf;
+  border-radius: 8px;
+  background: rgba(124,92,191,.07);
+  padding: .65rem .9rem;
+  transition: transform .15s;
+}
+.amhap-item:hover { transform: translateX(3px); }
+.amhap-eros {
+  border-left-color: #bf5c8f;
+  background: rgba(191,92,143,.08);
+}
+.amhap-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-bottom: .35rem;
+}
+.amhap-badge {
+  font-size: .65rem;
+  padding: .1rem .38rem;
+  border-radius: 4px;
+  background: #4a3080;
+  color: #c8aaff;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+.amhap-eros .amhap-badge { background: #7a2055; color: #ffaad4; }
+.amhap-glyph {
+  font-size: .95rem;
+  color: #c8aaff;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+.amhap-eros .amhap-glyph { color: #ffaad4; }
+.amhap-hwa {
+  font-size: .78rem;
+  color: var(--gold);
+}
+.amhap-pos {
+  font-size: .72rem;
+  color: var(--muted);
+  margin-left: .2rem;
+}
+.amhap-strength {
+  font-size: .72rem;
+  color: var(--gold-lite);
+  margin-left: auto;
+}
+.amhap-eros-badge {
+  font-size: .68rem;
+  padding: .1rem .38rem;
+  border-radius: 4px;
+  background: rgba(191,92,143,.25);
+  color: #ffaad4;
+  font-weight: 600;
+}
+.amhap-desc {
+  font-size: .81rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
 /* ─── 복음·반음 경보 ─── */
 .by-card { border-color: #5a2a2a; }
 
