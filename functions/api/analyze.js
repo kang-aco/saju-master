@@ -229,7 +229,7 @@ export async function onRequest(context) {
           if (rel['충'])   tags.push(rel['충']['충']);
           if (rel['형'])   tags.push(rel['형']['형']);
           if (rel['원진']) tags.push(rel['원진']['원진']);
-          jijiRelations.push({ ji1: jijiList[i], ji2: jijiList[j], 관계: tags.join(' · ') || rel['총평'] ?? '' });
+          jijiRelations.push({ ji1: jijiList[i], ji2: jijiList[j], 관계: tags.join(' · ') || (rel['총평'] ?? '') });
         }
       }
     }
