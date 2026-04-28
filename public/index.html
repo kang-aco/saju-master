@@ -16,68 +16,81 @@
   <main>
     <!-- Input Form -->
     <section class="card form-card" id="formSection">
-      <h2>생년월일 & 사주 입력</h2>
+      <h2>생년월일시 입력</h2>
 
       <form id="sajuForm">
-        <div class="form-grid">
-          <!-- 생년월일 -->
-          <div class="field-group">
-            <label>생년월일</label>
-            <div class="inline-inputs">
-              <div class="input-wrap">
-                <input type="number" id="birth_year" placeholder="연도" min="1900" max="2100" required />
-                <span class="unit">년</span>
-              </div>
-              <div class="input-wrap">
-                <input type="number" id="birth_month" placeholder="월" min="1" max="12" required />
-                <span class="unit">월</span>
-              </div>
-              <div class="input-wrap">
-                <input type="number" id="birth_day" placeholder="일" min="1" max="31" required />
-                <span class="unit">일</span>
-              </div>
-            </div>
-          </div>
 
-          <!-- 성별 -->
-          <div class="field-group">
-            <label>성별</label>
-            <div class="radio-group">
-              <label class="radio-label">
-                <input type="radio" name="gender" value="남" checked /> 남자
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="gender" value="여" /> 여자
-              </label>
-            </div>
+        <!-- 생년월일시 선택 -->
+        <div class="date-selects">
+          <div class="select-wrap">
+            <label>년</label>
+            <select id="birth_year"></select>
+          </div>
+          <div class="select-wrap">
+            <label>월</label>
+            <select id="birth_month"></select>
+          </div>
+          <div class="select-wrap">
+            <label>일</label>
+            <select id="birth_day"></select>
+          </div>
+          <div class="select-wrap hour-wrap">
+            <label>시</label>
+            <select id="birth_hour">
+              <option value="-1">시간 모름</option>
+              <option value="0">子時 (23–01시)</option>
+              <option value="1">丑時 (01–03시)</option>
+              <option value="2">寅時 (03–05시)</option>
+              <option value="3">卯時 (05–07시)</option>
+              <option value="4">辰時 (07–09시)</option>
+              <option value="5">巳時 (09–11시)</option>
+              <option value="6">午時 (11–13시)</option>
+              <option value="7">未時 (13–15시)</option>
+              <option value="8">申時 (15–17시)</option>
+              <option value="9">酉時 (17–19시)</option>
+              <option value="10">戌時 (19–21시)</option>
+              <option value="11">亥時 (21–23시)</option>
+            </select>
           </div>
         </div>
 
-        <!-- 사주 사柱 -->
-        <div class="pillars-section">
-          <p class="pillars-hint">각 주(柱)는 천간+지지 2글자 한자로 입력하세요. 예) 甲子, 乙丑</p>
-          <div class="pillars-grid">
-            <div class="pillar-input">
-              <label>연주 (年柱)</label>
-              <input type="text" id="yunju" maxlength="2" placeholder="甲子" required />
-              <span class="pillar-desc">태어난 해</span>
+        <!-- 성별 -->
+        <div class="gender-row">
+          <span class="gender-label">성별</span>
+          <label class="radio-label">
+            <input type="radio" name="gender" value="남" checked /> 남자
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="gender" value="여" /> 여자
+          </label>
+        </div>
+
+        <!-- 사주 원국 자동 미리보기 -->
+        <div class="pillars-preview" id="pillarsPreview">
+          <div class="preview-header">사주 원국 (자동 계산)</div>
+          <div class="preview-table">
+            <div class="preview-pillar" id="prev-siju">
+              <div class="pp-label">시주(時)</div>
+              <div class="pp-gan pp-char" id="siju-gan">—</div>
+              <div class="pp-ji pp-char" id="siju-ji">—</div>
             </div>
-            <div class="pillar-input">
-              <label>월주 (月柱)</label>
-              <input type="text" id="wolju" maxlength="2" placeholder="乙丑" required />
-              <span class="pillar-desc">태어난 달</span>
+            <div class="preview-pillar ilju-col" id="prev-ilju">
+              <div class="pp-label">일주(日) ★</div>
+              <div class="pp-gan pp-char" id="ilju-gan">—</div>
+              <div class="pp-ji pp-char" id="ilju-ji">—</div>
             </div>
-            <div class="pillar-input">
-              <label>일주 (日柱)</label>
-              <input type="text" id="ilju" maxlength="2" placeholder="丙寅" required />
-              <span class="pillar-desc">태어난 날 (일간)</span>
+            <div class="preview-pillar" id="prev-wolju">
+              <div class="pp-label">월주(月)</div>
+              <div class="pp-gan pp-char" id="wolju-gan">—</div>
+              <div class="pp-ji pp-char" id="wolju-ji">—</div>
             </div>
-            <div class="pillar-input">
-              <label>시주 (時柱)</label>
-              <input type="text" id="siju" maxlength="2" placeholder="丁卯" required />
-              <span class="pillar-desc">태어난 시각</span>
+            <div class="preview-pillar" id="prev-yunju">
+              <div class="pp-label">연주(年)</div>
+              <div class="pp-gan pp-char" id="yunju-gan">—</div>
+              <div class="pp-ji pp-char" id="yunju-ji">—</div>
             </div>
           </div>
+          <div class="preview-note" id="previewNote"></div>
         </div>
 
         <button type="submit" id="submitBtn" class="btn-analyze">
@@ -109,7 +122,7 @@
       <section class="card chart-card">
         <h2>사주 원국 (四柱原局)</h2>
         <div class="saju-table-wrap">
-          <table class="saju-table" id="sajuTable">
+          <table class="saju-table">
             <thead>
               <tr>
                 <th>시주(時)</th><th>일주(日)</th><th>월주(月)</th><th>연주(年)</th>
@@ -117,38 +130,33 @@
             </thead>
             <tbody>
               <tr id="sipsung-row" class="sipsung-row"></tr>
-              <tr id="ganjji-row" class="ganjji-row"></tr>
+              <tr id="ganjji-row"  class="ganjji-row"></tr>
               <tr id="sipsung-ji-row" class="sipsung-row"></tr>
             </tbody>
           </table>
         </div>
       </section>
 
-      <!-- Core Analysis Row -->
+      <!-- Core Analysis -->
       <div class="two-col">
-
-        <!-- 격국·용신 -->
         <section class="card">
           <h2>격국 · 용신</h2>
           <div id="gyukResult"></div>
         </section>
-
-        <!-- 일간강약 + 오행 -->
         <section class="card">
           <h2>일간강약 · 오행</h2>
           <div id="ilganResult"></div>
         </section>
-
       </div>
 
-      <!-- 대운 흐름 -->
+      <!-- 대운 -->
       <section class="card">
         <h2>대운 흐름 (大運)</h2>
         <div id="daewunResult" class="daewun-scroll"></div>
       </section>
 
-      <!-- 지지 관계 -->
-      <section class="card" id="jijiSection">
+      <!-- 지지 관계 · 신살 -->
+      <section class="card">
         <h2>지지 관계 · 신살</h2>
         <div id="jijiResult"></div>
       </section>
@@ -162,7 +170,6 @@
       <div class="action-row">
         <button onclick="resetForm()" class="btn-reset">↩ 새로 분석</button>
       </div>
-
     </div>
   </main>
 

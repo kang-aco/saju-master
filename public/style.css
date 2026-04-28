@@ -88,54 +88,62 @@ main {
 /* ─── Form ─── */
 .form-card h2 { font-size: 1.1rem; }
 
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.2rem;
-  margin-bottom: 1.5rem;
+/* 날짜 선택 행 */
+.date-selects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .8rem;
+  margin-bottom: 1.2rem;
+  align-items: flex-end;
 }
-@media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } }
-
-.field-group label {
-  display: block;
-  font-size: .8rem;
+.select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+}
+.select-wrap label {
+  font-size: .75rem;
   color: var(--muted);
-  letter-spacing: .05em;
-  margin-bottom: .4rem;
+  letter-spacing: .04em;
 }
+.hour-wrap { flex: 1; min-width: 160px; }
 
-.inline-inputs {
-  display: flex;
-  gap: .5rem;
-  align-items: center;
-}
-.input-wrap {
-  display: flex;
-  align-items: center;
-  gap: .25rem;
-}
-.unit { font-size: .85rem; color: var(--muted); }
-
-input[type="number"],
-input[type="text"] {
+select {
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text);
   font-family: inherit;
-  font-size: .95rem;
-  padding: .5rem .7rem;
+  font-size: .92rem;
+  padding: .48rem .7rem;
   outline: none;
+  cursor: pointer;
   transition: border-color .2s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237a8499' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .6rem center;
+  padding-right: 1.8rem;
 }
-input[type="number"] { width: 5.5rem; }
-input[type="text"]   { width: 5rem; text-align: center; letter-spacing: .1em; font-size: 1rem; }
-input:focus { border-color: var(--gold); }
+select:focus { border-color: var(--gold); }
 
-.radio-group {
+#birth_year  { width: 7rem; }
+#birth_month { width: 5rem; }
+#birth_day   { width: 5rem; }
+#birth_hour  { width: 100%; }
+
+/* 성별 */
+.gender-row {
   display: flex;
-  gap: 1.2rem;
-  margin-top: .2rem;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.4rem;
+}
+.gender-label {
+  font-size: .8rem;
+  color: var(--muted);
+  letter-spacing: .04em;
 }
 .radio-label {
   display: flex;
@@ -146,41 +154,57 @@ input:focus { border-color: var(--gold); }
 }
 input[type="radio"] { accent-color: var(--gold); width: 16px; height: 16px; }
 
-/* Pillars */
-.pillars-section { margin-bottom: 1.5rem; }
-.pillars-hint {
-  font-size: .78rem;
-  color: var(--muted);
-  margin-bottom: 1rem;
+/* ─── 사주 원국 미리보기 ─── */
+.pillars-preview {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.2rem 1rem;
+  margin-bottom: 1.4rem;
 }
-.pillars-grid {
+.preview-header {
+  font-size: .75rem;
+  color: var(--gold);
+  letter-spacing: .06em;
+  margin-bottom: .8rem;
+  text-align: center;
+}
+.preview-table {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-@media (max-width: 600px) { .pillars-grid { grid-template-columns: repeat(2, 1fr); } }
-
-.pillar-input {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .35rem;
-}
-.pillar-input label {
-  font-size: .78rem;
-  color: var(--gold);
-  letter-spacing: .04em;
-}
-.pillar-input input {
-  width: 4.5rem;
+  gap: .6rem;
   text-align: center;
-  font-size: 1.2rem;
-  letter-spacing: .15em;
-  padding: .6rem .4rem;
 }
-.pillar-desc {
-  font-size: .7rem;
+.preview-pillar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .6rem .3rem;
+}
+.preview-pillar.ilju-col {
+  border-color: var(--gold);
+  background: rgba(201,168,76,.07);
+}
+.pp-label {
+  font-size: .68rem;
   color: var(--muted);
+  margin-bottom: .4rem;
+  letter-spacing: .03em;
+}
+.pp-char {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: .05em;
+}
+.pp-gan { color: var(--gold-lite); }
+.pp-ji  { color: var(--text); }
+.preview-note {
+  font-size: .72rem;
+  color: var(--muted);
+  text-align: center;
+  margin-top: .6rem;
+  min-height: 1rem;
 }
 
 /* Submit Button */
